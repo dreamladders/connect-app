@@ -1,0 +1,466 @@
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family:
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+
+  background: #f3f4f6;
+  color: #111827;
+}
+
+
+/* =========================
+   TOP BAR
+========================= */
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+
+  width: 100%;
+
+  padding: 14px 18px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  background: #111827;
+  color: white;
+
+  box-shadow:
+    0 2px 10px rgba(0, 0, 0, 0.12);
+}
+
+
+.logo {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+
+/* =========================
+   MAIN
+========================= */
+
+main {
+  width: 100%;
+  max-width: 720px;
+
+  margin: 20px auto;
+
+  padding:
+    0 12px
+    50px;
+}
+
+
+/* =========================
+   CARD
+========================= */
+
+.card {
+  background: white;
+
+  border-radius: 16px;
+
+  padding: 18px;
+
+  margin-bottom: 16px;
+
+  box-shadow:
+    0 3px 14px rgba(0, 0, 0, 0.06);
+}
+
+
+/* =========================
+   HEADINGS
+========================= */
+
+h1,
+h2,
+h3 {
+  margin-top: 0;
+}
+
+h1 {
+  font-size: 28px;
+}
+
+h2 {
+  font-size: 20px;
+}
+
+
+/* =========================
+   MUTED TEXT
+========================= */
+
+.muted {
+  color: #6b7280;
+}
+
+.small {
+  font-size: 13px;
+}
+
+
+/* =========================
+   INPUTS
+========================= */
+
+input,
+textarea,
+button {
+  width: 100%;
+
+  font-family: inherit;
+  font-size: 16px;
+}
+
+
+input,
+textarea {
+  padding: 12px;
+
+  margin:
+    6px 0;
+
+  border:
+    1px solid #d1d5db;
+
+  border-radius: 10px;
+
+  outline: none;
+
+  background: white;
+}
+
+
+input:focus,
+textarea:focus {
+  border-color: #111827;
+
+  box-shadow:
+    0 0 0 2px
+    rgba(17, 24, 39, 0.08);
+}
+
+
+textarea {
+  min-height: 100px;
+
+  resize: vertical;
+}
+
+
+/* =========================
+   BUTTONS
+========================= */
+
+button {
+  padding: 12px;
+
+  margin:
+    6px 0;
+
+  border: none;
+
+  border-radius: 10px;
+
+  background: #111827;
+
+  color: white;
+
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.15s ease,
+    opacity 0.15s ease;
+}
+
+
+button:hover {
+  opacity: 0.92;
+}
+
+
+button:active {
+  transform: scale(0.98);
+}
+
+
+button:disabled {
+  opacity: 0.5;
+
+  cursor: not-allowed;
+}
+
+
+/* =========================
+   AUTH TABS
+========================= */
+
+.tabs {
+  display: flex;
+
+  gap: 8px;
+
+  margin-bottom: 12px;
+}
+
+
+.tabs button {
+  flex: 1;
+
+  background: #e5e7eb;
+
+  color: #111827;
+}
+
+
+.tabs button.active {
+  background: #111827;
+
+  color: white;
+}
+
+
+/* =========================
+   MESSAGE
+========================= */
+
+.message {
+  min-height: 20px;
+
+  margin:
+    8px 0;
+
+  font-size: 14px;
+}
+
+
+.error {
+  color: #b91c1c;
+}
+
+
+.ok {
+  color: #047857;
+}
+
+
+/* =========================
+   POSTS
+========================= */
+
+.post {
+  padding:
+    16px 0;
+
+  border-top:
+    1px solid #e5e7eb;
+}
+
+
+.post:first-child {
+  border-top: none;
+}
+
+
+.post img {
+  display: block;
+
+  width: 100%;
+
+  max-height: 500px;
+
+  object-fit: cover;
+
+  border-radius: 12px;
+
+  margin-top: 10px;
+}
+
+
+.post p {
+  white-space: pre-wrap;
+
+  overflow-wrap: anywhere;
+}
+
+
+/* =========================
+   FLEX ROW
+========================= */
+
+.row {
+  display: flex;
+
+  gap: 8px;
+
+  align-items: center;
+}
+
+
+.row input {
+  flex: 1;
+}
+
+
+.row button {
+  width: auto;
+
+  white-space: nowrap;
+}
+
+
+/* =========================
+   COMMENTS
+========================= */
+
+.comments {
+  margin:
+    10px 0;
+}
+
+
+.comment {
+  padding:
+    7px 0;
+
+  border-bottom:
+    1px solid #f3f4f6;
+
+  font-size: 14px;
+}
+
+
+/* =========================
+   CHAT
+========================= */
+
+.messageItem {
+  padding:
+    10px 0;
+
+  border-bottom:
+    1px solid #e5e7eb;
+
+  overflow-wrap: anywhere;
+}
+
+
+.messageItem .small {
+  display: block;
+
+  margin-top: 4px;
+}
+
+
+/* =========================
+   FILE INPUT
+========================= */
+
+input[type="file"] {
+  padding: 9px;
+
+  background: #f9fafb;
+}
+
+
+/* =========================
+   LABEL
+========================= */
+
+label {
+  display: block;
+
+  margin-top: 8px;
+
+  font-size: 14px;
+
+  font-weight: 600;
+}
+
+
+/* =========================
+   HIDDEN
+========================= */
+
+.hidden {
+  display: none !important;
+}
+
+
+/* =========================
+   MOBILE
+========================= */
+
+@media (max-width: 600px) {
+
+  main {
+    margin-top: 12px;
+
+    padding:
+      0 10px
+      40px;
+  }
+
+
+  .card {
+    padding: 15px;
+
+    border-radius: 13px;
+  }
+
+
+  h1 {
+    font-size: 24px;
+  }
+
+
+  h2 {
+    font-size: 19px;
+  }
+
+
+  .topbar {
+    padding:
+      12px 14px;
+  }
+
+
+  .logo {
+    font-size: 18px;
+  }
+
+}
+
+
+/* =========================
+   LARGE SCREENS
+========================= */
+
+@media (min-width: 900px) {
+
+  main {
+    max-width: 760px;
+  }
+
+}
