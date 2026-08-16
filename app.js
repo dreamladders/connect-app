@@ -1,350 +1,152 @@
 // ============================================================
-// CONNECTAPP V3
-// Main Application
-//
-// Features:
-// - Authentication
-// - Profiles
-// - People Search
-// - Social Posts
-// - Image Upload
-// - Likes
-// - Comments
-// - Conversations
-// - Private Chat
-// - Realtime
-// - Mobile Navigation
-// ============================================================
-
-
-// ============================================================
-// SUPABASE CLIENT
+// CONNECTAPP V4
+// Supabase + Social Feed + Search + Private Chat
 // ============================================================
 
 const { createClient } = window.supabase;
 
-
-const supabaseClient =
-  createClient(
-    window.SUPABASE_URL,
-    window.SUPABASE_ANON_KEY
-  );
+const supabaseClient = createClient(
+  window.SUPABASE_URL,
+  window.SUPABASE_ANON_KEY
+);
 
 
 // ============================================================
-// GLOBAL STATE
+// STATE
 // ============================================================
 
 let currentUser = null;
-
 let authMode = "login";
 
 let realtimeChannel = null;
 
 let activeChatUserId = null;
-
 let activeChatUserName = null;
 
 let searchTimer = null;
 
+let unreadMessages = new Map();
+
 
 // ============================================================
-// SHORTCUT
+// SHORTCUTS
 // ============================================================
 
-const $ = (id) =>
+const $ = id =>
   document.getElementById(id);
 
 
-// ============================================================
-// UI HELPERS
-// ============================================================
-
 function show(element) {
-
-  if (element) {
-
-    element.classList.remove("hidden");
-
-  }
-
+  if (element) element.classList.remove("hidden");
 }
 
 
 function hide(element) {
-
-  if (element) {
-
-    element.classList.add("hidden");
-
-  }
-
+  if (element) element.classList.add("hidden");
 }
 
 
-function setMessage(
-  id,
-  text,
-  success = false
-) {
+function setMessage(id, text, success = false) {
 
   const element = $(id);
 
-  if (!element) {
+  if (!element) return;
 
-    return;
-
-  }
-
-
-  element.textContent =
-    text || "";
-
+  element.textContent = text || "";
 
   element.className =
     success
       ? "message ok"
       : "message error";
-
 }
 
 
 // ============================================================
-// HTML ESCAPING
-// ============================================================
-
-function escapeHtml(value) {
-
-  return String(
-    value ?? ""
-  ).replace(
-    /[&<>"']/g,
-    character => ({
-
-      "&": "&amp;",
-      "<": "&lt;",
-      ">": "&gt;",
-      '"': "&quot;",
-      "'": "&#039;"
-
-    })[character]
-  );
-
-}
-
-
-function escapeAttr(value) {
-
-  return escapeHtml(value);
-
-}
-
-
-// ============================================================
-// TIME
-// ============================================================
-
-function formatTime(value) {
-
-  if (!value) {
-
-    return "";
-
-  }
-
-
-  return new Date(
-    value
-  ).toLocaleString();
-
-}
-
-
-// ============================================================
-// AUTH MODE
+// AUTH
 // ============================================================
 
 function setAuthMode(mode) {
 
   authMode = mode;
 
-
   $("loginTab")
     ?.classList
-    .toggle(
-      "active",
-      mode === "login"
-    );
-
+    .toggle("active", mode === "login");
 
   $("registerTab")
     ?.classList
-    .toggle(
-      "active",
-      mode === "register"
-    );
+    .toggle("active", mode === "register");
 
-
-  if ($("authSubmit")) {
-
-    $("authSubmit").textContent =
-      mode === "login"
-        ? "Login"
-        : "Register";
-
-  }
-
+  $("authSubmit").textContent =
+    mode === "login"
+      ? "Login"
+      : "Register";
 
   $("name")
     ?.classList
-    .toggle(
-      "hidden",
-      mode === "login"
-    );
+    .toggle("hidden", mode === "login");
 
-
-  if ($("authMessage")) {
-
-    $("authMessage").textContent = "";
-
-  }
-
+  setMessage("authMessage", "");
 }
 
 
-$("loginTab").onclick =
-  () => {
-
-    setAuthMode("login");
-
-  };
+$("loginTab")?.addEventListener(
+  "click",
+  () => setAuthMode("login")
+);
 
 
-$("registerTab").onclick =
-  () => {
-
-    setAuthMode("register");
-
-  };
+$("registerTab")?.addEventListener(
+  "click",
+  () => setAuthMode("register")
+);
 
 
-// ============================================================
-// AUTHENTICATION
-// ============================================================
+$("authForm")?.addEventListener(
+  "submit",
+  async event => {
 
-$("authForm")
-  .addEventListener(
-    "submit",
-    async event => {
+    event.preventDefault();
 
-      event.preventDefault();
+    const email =
+      $("email").value.trim();
 
+    const password =
+      $("password").value;
 
-      const email =
-        $("email")
-          .value
-          .trim();
+    const name =
+      $("name").value.trim();
 
+    setMessage("authMessage", "");
 
-      const password =
-        $("password")
-          .value;
+    try {
 
+      if (authMode === "login") {
 
-      const name =
-        $("name")
-          .value
-          .trim();
-
-
-      setMessage(
-        "authMessage",
-        ""
-      );
-
-
-      try {
-
-        // ======================================================
-        // LOGIN
-        // ======================================================
-
-        if (
-          authMode === "login"
-        ) {
-
-          const {
-            error
-          } =
-            await supabaseClient
-              .auth
-              .signInWithPassword({
-
-                email,
-
-                password
-
-              });
-
-
-          if (error) {
-
-            throw error;
-
-          }
-
-          return;
-
-        }
-
-
-        // ======================================================
-        // REGISTER
-        // ======================================================
-
-        if (!name) {
-
-          throw new Error(
-            "Name is required."
-          );
-
-        }
-
-
-        const {
-          data,
-          error
-        } =
-          await supabaseClient
-            .auth
-            .signUp({
-
+        const { error } =
+          await supabaseClient.auth
+            .signInWithPassword({
               email,
-
-              password,
-
-              options: {
-
-                data: {
-
-                  name
-
-                },
-
-                emailRedirectTo:
-                  window.location.origin + "/"
-
-              }
-
+              password
             });
 
+        if (error) throw error;
 
-        if (error) {
+      } else {
 
-          throw error;
+        const { data, error } =
+          await supabaseClient.auth
+            .signUp({
+              email,
+              password,
+              options: {
+                data: { name },
+                emailRedirectTo:
+                  window.location.origin + "/"
+              }
+            });
 
-        }
-
+        if (error) throw error;
 
         if (!data.session) {
 
@@ -363,53 +165,41 @@ $("authForm")
           );
 
         }
-
-
-      } catch (error) {
-
-        console.error(
-          "Authentication error:",
-          error
-        );
-
-
-        setMessage(
-          "authMessage",
-          error.message ||
-          "Authentication failed."
-        );
-
       }
 
+    } catch (error) {
+
+      console.error(error);
+
+      setMessage(
+        "authMessage",
+        error.message ||
+        "Authentication failed."
+      );
+
     }
-  );
+
+  }
+);
 
 
 // ============================================================
 // LOGOUT
 // ============================================================
 
-$("logoutBtn")
-  .onclick =
+$("logoutBtn")?.addEventListener(
+  "click",
   async () => {
 
-    const {
-      error
-    } =
-      await supabaseClient
-        .auth
-        .signOut();
-
+    const { error } =
+      await supabaseClient.auth.signOut();
 
     if (error) {
-
-      alert(
-        error.message
-      );
-
+      alert(error.message);
     }
 
-  };
+  }
+);
 
 
 // ============================================================
@@ -418,28 +208,14 @@ $("logoutBtn")
 
 async function loadProfile() {
 
-  if (!currentUser) {
+  if (!currentUser) return;
 
-    return;
-
-  }
-
-
-  const {
-    data,
-    error
-  } =
+  const { data, error } =
     await supabaseClient
       .from("profiles")
-      .select(
-        "name,bio,avatar_url"
-      )
-      .eq(
-        "id",
-        currentUser.id
-      )
+      .select("name,bio,avatar_url")
+      .eq("id", currentUser.id)
       .maybeSingle();
-
 
   if (error) {
 
@@ -449,107 +225,69 @@ async function loadProfile() {
     );
 
     return;
-
   }
 
-
-  const profileName =
+  const name =
     data?.name ||
-    currentUser
-      .user_metadata
-      ?.name ||
+    currentUser.user_metadata?.name ||
     "";
 
-
   $("profileName").value =
-    profileName;
-
+    name;
 
   $("bio").value =
     data?.bio || "";
 
-
-  $("welcome")
-    .textContent =
-    `Welcome, ${
-      profileName ||
-      currentUser.email
-    }`;
-
+  $("welcome").textContent =
+    `Welcome, ${name || currentUser.email}`;
 }
 
 
-// ============================================================
-// SAVE PROFILE
-// ============================================================
+$("profileForm")?.addEventListener(
+  "submit",
+  async event => {
 
-$("profileForm")
-  .addEventListener(
-    "submit",
-    async event => {
+    event.preventDefault();
 
-      event.preventDefault();
+    if (!currentUser) return;
 
+    const name =
+      $("profileName")
+        .value
+        .trim();
 
-      if (!currentUser) {
+    const bio =
+      $("bio")
+        .value
+        .trim();
 
-        return;
+    if (!name) {
 
-      }
+      setMessage(
+        "profileMessage",
+        "Name is required."
+      );
 
+      return;
+    }
 
-      const name =
-        $("profileName")
-          .value
-          .trim();
+    const { error } =
+      await supabaseClient
+        .from("profiles")
+        .upsert({
+          id: currentUser.id,
+          name,
+          bio
+        });
 
+    if (error) {
 
-      const bio =
-        $("bio")
-          .value
-          .trim();
+      setMessage(
+        "profileMessage",
+        error.message
+      );
 
-
-      if (!name) {
-
-        setMessage(
-          "profileMessage",
-          "Name is required."
-        );
-
-        return;
-
-      }
-
-
-      const {
-        error
-      } =
-        await supabaseClient
-          .from("profiles")
-          .upsert({
-
-            id:
-              currentUser.id,
-
-            name,
-
-            bio
-
-          });
-
-
-      if (error) {
-
-        setMessage(
-          "profileMessage",
-          error.message
-        );
-
-        return;
-
-      }
-
+    } else {
 
       setMessage(
         "profileMessage",
@@ -557,11 +295,11 @@ $("profileForm")
         true
       );
 
-
       await loadProfile();
-
     }
-  );
+
+  }
+);
 
 
 // ============================================================
@@ -570,62 +308,35 @@ $("profileForm")
 
 async function uploadPostImage(file) {
 
-  if (!currentUser) {
+  if (!currentUser)
+    throw new Error("You must be logged in.");
 
-    throw new Error(
-      "You must be logged in."
-    );
-
-  }
-
-
-  if (!file) {
-
+  if (!file)
     return null;
 
-  }
-
-
   const allowedTypes = [
-
     "image/jpeg",
-
     "image/png",
-
     "image/webp",
-
     "image/gif"
-
   ];
 
-
-  if (
-    !allowedTypes
-      .includes(file.type)
-  ) {
+  if (!allowedTypes.includes(file.type)) {
 
     throw new Error(
       "Only JPG, PNG, WEBP or GIF images are allowed."
     );
-
   }
-
 
   const maxSize =
     5 * 1024 * 1024;
 
-
-  if (
-    file.size >
-    maxSize
-  ) {
+  if (file.size > maxSize) {
 
     throw new Error(
       "Image must be 5 MB or smaller."
     );
-
   }
-
 
   const extension =
     file.name
@@ -633,14 +344,10 @@ async function uploadPostImage(file) {
       .pop()
       .toLowerCase();
 
-
   const path =
     `${currentUser.id}/${crypto.randomUUID()}.${extension}`;
 
-
-  const {
-    error
-  } =
+  const { error } =
     await supabaseClient
       .storage
       .from("post-images")
@@ -648,26 +355,14 @@ async function uploadPostImage(file) {
         path,
         file,
         {
-
-          contentType:
-            file.type,
-
-          upsert:
-            false
-
+          contentType: file.type,
+          upsert: false
         }
       );
 
-
-  if (error) {
-
-    throw error;
-
-  }
-
+  if (error) throw error;
 
   return path;
-
 }
 
 
@@ -675,149 +370,87 @@ async function uploadPostImage(file) {
 // CREATE POST
 // ============================================================
 
-$("postForm")
-  .addEventListener(
-    "submit",
-    async event => {
+$("postForm")?.addEventListener(
+  "submit",
+  async event => {
 
-      event.preventDefault();
+    event.preventDefault();
 
+    if (!currentUser) return;
 
-      if (!currentUser) {
+    try {
 
-        return;
+      const content =
+        $("postText")
+          .value
+          .trim();
 
+      if (!content)
+        throw new Error("Post cannot be empty.");
+
+      const file =
+        $("postImage")
+          .files[0];
+
+      let imagePath = null;
+
+      if (file) {
+        imagePath =
+          await uploadPostImage(file);
       }
 
+      const { error } =
+        await supabaseClient
+          .from("posts")
+          .insert({
+            user_id: currentUser.id,
+            content,
+            image_url: imagePath
+          });
 
-      try {
+      if (error) throw error;
 
-        const content =
-          $("postText")
-            .value
-            .trim();
+      $("postForm").reset();
 
+      setMessage(
+        "postMessage",
+        "Post published successfully.",
+        true
+      );
 
-        if (!content) {
+      await loadPosts();
 
-          throw new Error(
-            "Post cannot be empty."
-          );
+    } catch (error) {
 
-        }
-
-
-        const file =
-          $("postImage")
-            .files[0];
-
-
-        let imagePath = null;
-
-
-        if (file) {
-
-          imagePath =
-            await uploadPostImage(
-              file
-            );
-
-        }
-
-
-        const {
-          error
-        } =
-          await supabaseClient
-            .from("posts")
-            .insert({
-
-              user_id:
-                currentUser.id,
-
-              content,
-
-              image_url:
-                imagePath
-
-            });
-
-
-        if (error) {
-
-          throw error;
-
-        }
-
-
-        $("postForm").reset();
-
-
-        setMessage(
-          "postMessage",
-          "Post published successfully.",
-          true
-        );
-
-
-        await loadPosts();
-
-
-      } catch (error) {
-
-        setMessage(
-          "postMessage",
-          error.message ||
-          "Could not publish post."
-        );
-
-      }
+      setMessage(
+        "postMessage",
+        error.message ||
+        "Could not publish post."
+      );
 
     }
-  );
+
+  }
+);
 
 
 // ============================================================
-// SIGNED IMAGE URL
+// IMAGE URL
 // ============================================================
 
 async function getImageUrl(path) {
 
-  if (!path) {
+  if (!path) return null;
 
-    return null;
-
-  }
-
-
-  const {
-    data,
-    error
-  } =
+  const { data, error } =
     await supabaseClient
       .storage
       .from("post-images")
-      .createSignedUrl(
-        path,
-        3600
-      );
+      .createSignedUrl(path, 3600);
 
+  if (error) return null;
 
-  if (error) {
-
-    console.error(
-      "Image URL error:",
-      error
-    );
-
-    return null;
-
-  }
-
-
-  return data?.signedUrl ||
-    null;
-
+  return data?.signedUrl || null;
 }
 
 
@@ -827,28 +460,14 @@ async function getImageUrl(path) {
 
 async function loadPosts() {
 
-  if (!currentUser) {
+  if (!currentUser) return;
 
-    return;
-
-  }
-
-
-  const postsElement =
+  const element =
     $("posts");
 
+  if (!element) return;
 
-  if (!postsElement) {
-
-    return;
-
-  }
-
-
-  const {
-    data,
-    error
-  } =
+  const { data, error } =
     await supabaseClient
       .from("posts")
       .select(`
@@ -857,490 +476,285 @@ async function loadPosts() {
         content,
         image_url,
         created_at,
-
-        profiles!posts_user_id_fkey(
-          name
-        ),
-
-        likes(
-          user_id
-        ),
-
+        profiles!posts_user_id_fkey(name),
+        likes(user_id),
         comments(
           id,
           user_id,
           content,
           created_at,
-
-          profiles(
-            name
-          )
+          profiles(name)
         )
       `)
       .order(
         "created_at",
-        {
-          ascending: false
-        }
+        { ascending: false }
       )
       .limit(50);
 
-
   if (error) {
 
-    postsElement.innerHTML =
-      `<p class="message error">
-        ${escapeHtml(
-          error.message
-        )}
-      </p>`;
+    element.innerHTML =
+      `<p class="message error">${escapeHtml(error.message)}</p>`;
 
     return;
-
   }
 
-
-  const posts =
-    data || [];
-
+  const posts = data || [];
 
   if (!posts.length) {
 
-    postsElement.innerHTML =
-      `<p class="muted">
-        No posts yet.
-      </p>`;
+    element.innerHTML =
+      `<p class="muted">No posts yet.</p>`;
 
     return;
-
   }
 
-
-  const postHtml =
+  const html =
     await Promise.all(
+      posts.map(async post => {
 
-      posts.map(
-        async post => {
+        const liked =
+          (post.likes || [])
+            .some(
+              like =>
+                like.user_id ===
+                currentUser.id
+            );
 
-          const liked =
-            (post.likes || [])
-              .some(
-                like =>
-                  like.user_id ===
-                  currentUser.id
-              );
+        let imageHtml = "";
 
+        if (post.image_url) {
 
-          let imageHtml = "";
+          const url =
+            await getImageUrl(
+              post.image_url
+            );
 
+          if (url) {
 
-          if (
-            post.image_url
-          ) {
-
-            const imageUrl =
-              await getImageUrl(
-                post.image_url
-              );
-
-
-            if (imageUrl) {
-
-              imageHtml =
-                `<img
-                  src="${escapeAttr(
-                    imageUrl
-                  )}"
-                  alt="Post image"
-                  loading="lazy"
-                >`;
-
-            }
-
+            imageHtml =
+              `<img
+                src="${escapeAttr(url)}"
+                alt="Post image"
+                loading="lazy"
+              >`;
           }
-
-
-          const comments =
-            (post.comments || [])
-              .sort(
-                (a, b) =>
-                  new Date(a.created_at) -
-                  new Date(b.created_at)
-              )
-              .map(
-                comment => `
-
-                  <div class="comment">
-
-                    <b>
-                      ${escapeHtml(
-                        comment
-                          .profiles
-                          ?.name ||
-                        "User"
-                      )}
-                    </b>
-
-                    :
-                    ${escapeHtml(
-                      comment.content
-                    )}
-
-                  </div>
-
-                `
-              )
-              .join("");
-
-
-          return `
-
-            <article
-              class="post"
-            >
-
-              <div>
-
-                <b>
-                  ${escapeHtml(
-                    post
-                      .profiles
-                      ?.name ||
-                    "User"
-                  )}
-                </b>
-
-              </div>
-
-
-              <div
-                class="muted small"
-              >
-
-                ${formatTime(
-                  post.created_at
-                )}
-
-              </div>
-
-
-              <p>
-
-                ${escapeHtml(
-                  post.content
-                )}
-
-              </p>
-
-
-              ${imageHtml}
-
-
-              <div class="row">
-
-                <button
-                  type="button"
-                  onclick="toggleLike(
-                    '${escapeAttr(
-                      post.id
-                    )}',
-                    ${liked}
-                  )"
-                >
-
-                  ${
-                    liked
-                      ? "Unlike"
-                      : "Like"
-                  }
-
-                  (
-                  ${
-                    post.likes?.length ||
-                    0
-                  }
-                  )
-
-                </button>
-
-              </div>
-
-
-              <div
-                class="comments"
-              >
-
-                ${
-                  comments ||
-                  `<p class="muted small">
-                    No comments yet.
-                  </p>`
-                }
-
-              </div>
-
-
-              <div class="row">
-
-                <input
-                  id="comment-${escapeAttr(
-                    post.id
-                  )}"
-                  maxlength="500"
-                  placeholder="Write a comment..."
-                >
-
-
-                <button
-                  type="button"
-                  onclick="addComment(
-                    '${escapeAttr(
-                      post.id
-                    )}'
-                  )"
-                >
-                  Comment
-                </button>
-
-              </div>
-
-            </article>
-
-          `;
-
         }
-      )
 
+        const comments =
+          (post.comments || [])
+            .map(
+              comment => `
+                <div class="comment">
+                  <b>
+                    ${escapeHtml(
+                      comment.profiles?.name ||
+                      "User"
+                    )}
+                  </b>
+                  :
+                  ${escapeHtml(
+                    comment.content
+                  )}
+                </div>
+              `
+            )
+            .join("");
+
+        return `
+          <article class="post">
+
+            <b>
+              ${escapeHtml(
+                post.profiles?.name ||
+                "User"
+              )}
+            </b>
+
+            <div class="muted small">
+              ${formatTime(post.created_at)}
+            </div>
+
+            <p>
+              ${escapeHtml(post.content)}
+            </p>
+
+            ${imageHtml}
+
+            <div class="row">
+
+              <button
+                type="button"
+                onclick="toggleLike(
+                  '${post.id}',
+                  ${liked}
+                )"
+              >
+                ${liked ? "Unlike" : "Like"}
+                (${post.likes?.length || 0})
+              </button>
+
+            </div>
+
+            <div class="comments">
+              ${comments}
+            </div>
+
+            <div class="row">
+
+              <input
+                id="comment-${post.id}"
+                maxlength="500"
+                placeholder="Write a comment..."
+              >
+
+              <button
+                type="button"
+                onclick="addComment('${post.id}')"
+              >
+                Comment
+              </button>
+
+            </div>
+
+          </article>
+        `;
+
+      })
     );
 
-
-  postsElement.innerHTML =
-    postHtml.join("");
-
+  element.innerHTML =
+    html.join("");
 }
 
 
 // ============================================================
-// LIKE / UNLIKE
+// LIKE
 // ============================================================
 
 window.toggleLike =
-  async function (
-    postId,
-    liked
-  ) {
+  async function(postId, liked) {
 
-    if (!currentUser) {
+    if (!currentUser) return;
 
-      return;
-
-    }
-
-
-    let error = null;
-
+    let result;
 
     if (liked) {
 
-      ({
-        error
-      } =
+      result =
         await supabaseClient
           .from("likes")
           .delete()
-          .eq(
-            "post_id",
-            postId
-          )
-          .eq(
-            "user_id",
-            currentUser.id
-          ));
+          .eq("post_id", postId)
+          .eq("user_id", currentUser.id);
 
     } else {
 
-      ({
-        error
-      } =
+      result =
         await supabaseClient
           .from("likes")
           .insert({
-
-            post_id:
-              postId,
-
-            user_id:
-              currentUser.id
-
-          }));
-
+            post_id: postId,
+            user_id: currentUser.id
+          });
     }
 
+    if (result.error) {
 
-    if (error) {
-
-      alert(
-        error.message
-      );
-
+      alert(result.error.message);
       return;
-
     }
-
 
     await loadPosts();
-
   };
 
 
 // ============================================================
-// ADD COMMENT
+// COMMENT
 // ============================================================
 
 window.addComment =
-  async function (
-    postId
-  ) {
+  async function(postId) {
 
-    if (!currentUser) {
-
-      return;
-
-    }
-
+    if (!currentUser) return;
 
     const input =
       $(`comment-${postId}`);
 
-
     const content =
-      input
-        ?.value
-        .trim();
+      input?.value.trim();
 
+    if (!content) return;
 
-    if (!content) {
-
-      return;
-
-    }
-
-
-    const {
-      error
-    } =
+    const { error } =
       await supabaseClient
         .from("comments")
         .insert({
-
-          post_id:
-            postId,
-
-          user_id:
-            currentUser.id,
-
+          post_id: postId,
+          user_id: currentUser.id,
           content
-
         });
-
 
     if (error) {
 
-      alert(
-        error.message
-      );
-
+      alert(error.message);
       return;
-
     }
-
 
     input.value = "";
 
-
     await loadPosts();
-
   };
 
 
 // ============================================================
-// USER SEARCH
+// SEARCH
 // ============================================================
 
 const userSearch =
   $("userSearch");
 
+userSearch?.addEventListener(
+  "input",
+  () => {
 
-if (userSearch) {
+    clearTimeout(searchTimer);
 
-  userSearch.addEventListener(
-    "input",
-    () => {
-
-      clearTimeout(
-        searchTimer
+    searchTimer =
+      setTimeout(
+        searchUsers,
+        400
       );
 
-
-      searchTimer =
-        setTimeout(
-          searchUsers,
-          400
-        );
-
-    }
-  );
-
-}
+  }
+);
 
 
 async function searchUsers() {
 
   const query =
-    userSearch
-      ?.value
-      .trim();
-
+    userSearch?.value.trim();
 
   const results =
     $("searchResults");
 
-
-  if (!results) {
-
-    return;
-
-  }
-
+  if (!results) return;
 
   if (!query) {
 
     results.innerHTML =
-      `<p class="muted">
-        Search for people.
-      </p>`;
+      `<p class="muted">Search for people.</p>`;
 
     return;
-
   }
 
+  if (!currentUser) return;
 
-  if (!currentUser) {
-
-    return;
-
-  }
-
-
-  const {
-    data,
-    error
-  } =
+  const { data, error } =
     await supabaseClient
       .from("profiles")
-      .select(
-        "id,name,bio,avatar_url"
-      )
+      .select("id,name,bio,avatar_url")
       .ilike(
         "name",
         `%${query}%`
@@ -1351,95 +765,50 @@ async function searchUsers() {
       )
       .limit(20);
 
-
   if (error) {
 
     results.innerHTML =
-      `<p class="message error">
-        ${escapeHtml(
-          error.message
-        )}
-      </p>`;
+      `<p class="message error">${escapeHtml(error.message)}</p>`;
 
     return;
-
   }
-
 
   if (!data?.length) {
 
     results.innerHTML =
-      `<p class="muted">
-        No users found.
-      </p>`;
+      `<p class="muted">No users found.</p>`;
 
     return;
-
   }
 
-
   results.innerHTML =
-    data
-      .map(
-        user => {
+    data.map(user => `
 
-          const safeName =
-            user.name ||
-            "User";
+      <div class="search-user">
 
+        <div>
+          <strong>
+            ${escapeHtml(user.name || "User")}
+          </strong>
 
-          return `
+          <p class="muted small">
+            ${escapeHtml(user.bio || "")}
+          </p>
+        </div>
 
-            <div
-              class="search-user"
-            >
+        <button
+          type="button"
+          onclick="startChat(
+            '${user.id}',
+            '${escapeAttr(user.name || "User")}'
+          )"
+        >
+          Message
+        </button>
 
-              <div>
+      </div>
 
-                <strong>
-                  ${escapeHtml(
-                    safeName
-                  )}
-                </strong>
-
-                <p
-                  class="muted small"
-                >
-
-                  ${escapeHtml(
-                    user.bio ||
-                    ""
-                  )}
-
-                </p>
-
-              </div>
-
-
-              <button
-                type="button"
-                onclick="startChat(
-                  '${escapeAttr(
-                    user.id
-                  )}',
-                  '${escapeAttr(
-                    safeName
-                  )}'
-                )"
-              >
-
-                Message
-
-              </button>
-
-            </div>
-
-          `;
-
-        }
-      )
-      .join("");
-
+    `).join("");
 }
 
 
@@ -1448,36 +817,69 @@ async function searchUsers() {
 // ============================================================
 
 window.startChat =
-  async function (
-    userId,
-    userName
-  ) {
+  async function(userId, userName) {
 
-    if (!currentUser) {
-
-      return;
-
-    }
-
+    if (!currentUser) return;
 
     activeChatUserId =
       userId;
 
-
     activeChatUserName =
-      userName ||
-      "User";
+      userName || "User";
 
+    showChatHeader();
 
-    await showMessagesPage();
+    await loadActiveChat();
 
+    activateNav("messages");
 
-    await openConversation(
-      userId,
-      activeChatUserName
-    );
-
+    $("messagesCard")
+      ?.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+      });
   };
+
+
+// ============================================================
+// CHAT HEADER
+// ============================================================
+
+function showChatHeader() {
+
+  $("chatTitle").textContent =
+    activeChatUserName || "Messages";
+
+  $("chatSubtitle").textContent =
+    "Private conversation";
+
+  show($("activeChat"));
+
+  hide($("conversationList"));
+
+  show($("backToConversations"));
+
+  $("messageText")?.focus();
+}
+
+
+function showConversationList() {
+
+  hide($("activeChat"));
+
+  show($("conversationList"));
+
+  hide($("backToConversations"));
+
+  $("chatTitle").textContent =
+    "Messages";
+
+  $("chatSubtitle").textContent =
+    "Select a conversation";
+
+  $("chatHeaderAvatar").innerHTML =
+    "👤";
+}
 
 
 // ============================================================
@@ -1486,28 +888,14 @@ window.startChat =
 
 async function loadConversations() {
 
-  if (!currentUser) {
-
-    return;
-
-  }
-
+  if (!currentUser) return;
 
   const container =
     $("conversationList");
 
+  if (!container) return;
 
-  if (!container) {
-
-    return;
-
-  }
-
-
-  const {
-    data,
-    error
-  } =
+  const { data, error } =
     await supabaseClient
       .from("messages")
       .select(`
@@ -1522,237 +910,145 @@ async function loadConversations() {
       )
       .order(
         "created_at",
-        {
-          ascending: false
-        }
+        { ascending: false }
       )
-      .limit(100);
-
+      .limit(200);
 
   if (error) {
 
     container.innerHTML =
-      `<p class="message error">
-        ${escapeHtml(
-          error.message
-        )}
-      </p>`;
+      `<p class="message error">${escapeHtml(error.message)}</p>`;
 
     return;
-
   }
-
 
   const messages =
     data || [];
 
-
-  const conversationMap =
+  const map =
     new Map();
 
+  for (const message of messages) {
 
-  for (
-    const message of messages
-  ) {
-
-    const otherUserId =
-      message.sender_id ===
-      currentUser.id
+    const other =
+      message.sender_id === currentUser.id
         ? message.receiver_id
         : message.sender_id;
 
+    if (!other) continue;
 
-    if (
-      !otherUserId ||
-      otherUserId ===
-      currentUser.id
-    ) {
+    if (!map.has(other)) {
 
-      continue;
-
-    }
-
-
-    if (
-      !conversationMap.has(
-        otherUserId
-      )
-    ) {
-
-      conversationMap.set(
-        otherUserId,
+      map.set(
+        other,
         message
       );
-
     }
-
   }
 
+  const ids =
+    [...map.keys()];
 
-  const otherUserIds =
-    Array.from(
-      conversationMap.keys()
-    );
-
-
-  if (!otherUserIds.length) {
+  if (!ids.length) {
 
     container.innerHTML =
-      `<p class="muted">
-        No conversations yet.<br>
-        Search for a person to start chatting.
-      </p>`;
+      `<div class="empty-state">
+        <p>No conversations yet.</p>
+        <span class="muted small">
+          Search for a person to start chatting.
+        </span>
+      </div>`;
+
+    updateMessageBadge();
 
     return;
-
   }
 
-
-  const {
-    data: profiles,
-    error: profileError
-  } =
+  const { data: profiles } =
     await supabaseClient
       .from("profiles")
-      .select(
-        "id,name,avatar_url"
-      )
-      .in(
-        "id",
-        otherUserIds
-      );
-
-
-  if (profileError) {
-
-    container.innerHTML =
-      `<p class="message error">
-        ${escapeHtml(
-          profileError.message
-        )}
-      </p>`;
-
-    return;
-
-  }
-
+      .select("id,name,avatar_url")
+      .in("id", ids);
 
   const profileMap =
     new Map(
-      (profiles || [])
-        .map(
-          profile =>
-            [
-              profile.id,
-              profile
-            ]
-        )
+      (profiles || []).map(
+        p => [p.id, p]
+      )
     );
 
-
   container.innerHTML =
-    otherUserIds
-      .map(
-        userId => {
+    ids.map(userId => {
 
-          const lastMessage =
-            conversationMap.get(
-              userId
-            );
+      const last =
+        map.get(userId);
 
+      const profile =
+        profileMap.get(userId);
 
-          const profile =
-            profileMap.get(
-              userId
-            );
+      const name =
+        profile?.name || "User";
 
+      const unread =
+        unreadMessages.get(userId) || 0;
 
-          const name =
-            profile?.name ||
-            "User";
+      return `
 
+        <button
+          type="button"
+          class="conversation-item ${
+            unread ? "unread" : ""
+          }"
+          onclick="openConversation(
+            '${userId}',
+            '${escapeAttr(name)}',
+            '${escapeAttr(profile?.avatar_url || "")}'
+          )"
+        >
 
-          const avatar =
-            profile?.avatar_url
-              ? `
-                <img
-                  src="${escapeAttr(
-                    profile.avatar_url
-                  )}"
-                  alt=""
-                >
-              `
-              : "👤";
+          <div class="conversation-avatar">
 
+            ${
+              profile?.avatar_url
+                ? `
+                  <img
+                    src="${escapeAttr(profile.avatar_url)}"
+                    alt=""
+                  >
+                `
+                : "👤"
+            }
 
-          return `
+          </div>
 
-            <button
-              type="button"
-              class="conversation-item"
-              onclick="openConversation(
-                '${escapeAttr(
-                  userId
-                )}',
-                '${escapeAttr(
-                  name
-                )}'
-              )"
-            >
+          <div class="conversation-content">
 
-              <div
-                class="conversation-avatar"
-              >
+            <strong>
+              ${escapeHtml(name)}
+            </strong>
 
-                ${avatar}
+            <p class="muted small">
+              ${escapeHtml(last.content)}
+            </p>
 
-              </div>
+          </div>
 
+          <div class="conversation-time muted small">
+            ${formatTime(last.created_at)}
+            ${
+              unread
+                ? `<div class="unread-count">${unread}</div>`
+                : ""
+            }
+          </div>
 
-              <div
-                class="conversation-content"
-              >
+        </button>
 
-                <strong>
-                  ${escapeHtml(
-                    name
-                  )}
-                </strong>
+      `;
 
-                <p
-                  class="muted small"
-                >
+    }).join("");
 
-                  ${escapeHtml(
-                    lastMessage
-                      ?.content ||
-                    ""
-                  )}
-
-                </p>
-
-              </div>
-
-
-              <div
-                class="conversation-time muted small"
-              >
-
-                ${formatTime(
-                  lastMessage
-                    ?.created_at
-                )}
-
-              </div>
-
-            </button>
-
-          `;
-
-        }
-      )
-      .join("");
-
+  updateMessageBadge();
 }
 
 
@@ -1761,54 +1057,41 @@ async function loadConversations() {
 // ============================================================
 
 window.openConversation =
-  async function (
+  async function(
     userId,
-    userName
+    userName,
+    avatarUrl
   ) {
-
-    if (!currentUser) {
-
-      return;
-
-    }
-
 
     activeChatUserId =
       userId;
 
-
     activeChatUserName =
-      userName ||
-      "User";
+      userName || "User";
 
+    unreadMessages.delete(userId);
 
-    $("chatTitle")
-      .textContent =
-      activeChatUserName;
+    updateMessageBadge();
 
+    showChatHeader();
 
-    $("chatSubtitle")
-      .textContent =
-      "Conversation";
+    if (avatarUrl) {
 
+      $("chatHeaderAvatar").innerHTML =
+        `<img
+          src="${escapeAttr(avatarUrl)}"
+          alt=""
+        >`;
 
-    hide(
-      $("conversationList")
-    );
+    } else {
 
-
-    show(
-      $("activeChat")
-    );
-
-
-    show(
-      $("backToConversations")
-    );
-
+      $("chatHeaderAvatar").innerHTML =
+        "👤";
+    }
 
     await loadActiveChat();
 
+    await loadConversations();
   };
 
 
@@ -1821,34 +1104,20 @@ async function loadActiveChat() {
   if (
     !currentUser ||
     !activeChatUserId
-  ) {
+  ) return;
 
-    return;
-
-  }
-
-
-  const messagesElement =
+  const element =
     $("chatMessages");
 
+  if (!element) return;
 
-  if (!messagesElement) {
+  const wasNearBottom =
+    element.scrollHeight -
+    element.scrollTop -
+    element.clientHeight <
+    100;
 
-    return;
-
-  }
-
-
-  messagesElement.innerHTML =
-    `<p class="muted">
-      Loading messages...
-    </p>`;
-
-
-  const {
-    data,
-    error
-  } =
+  const { data, error } =
     await supabaseClient
       .from("messages")
       .select(`
@@ -1863,95 +1132,72 @@ async function loadActiveChat() {
       )
       .order(
         "created_at",
-        {
-          ascending: true
-        }
+        { ascending: true }
       );
-
 
   if (error) {
 
-    messagesElement.innerHTML =
-      `<p class="message error">
-        ${escapeHtml(
-          error.message
-        )}
-      </p>`;
+    element.innerHTML =
+      `<p class="message error">${escapeHtml(error.message)}</p>`;
 
     return;
-
   }
-
 
   const messages =
     data || [];
 
-
   if (!messages.length) {
 
-    messagesElement.innerHTML =
+    element.innerHTML =
       `<p class="muted">
         No messages yet. Say hello 👋
       </p>`;
 
     return;
-
   }
 
+  element.innerHTML =
+    messages.map(message => {
 
-  messagesElement.innerHTML =
-    messages
-      .map(
-        message => {
+      const mine =
+        message.sender_id ===
+        currentUser.id;
 
-          const mine =
-            message.sender_id ===
-            currentUser.id;
+      return `
 
+        <div
+          class="chat-message ${
+            mine ? "mine" : "theirs"
+          }"
+        >
 
-          return `
+          <div class="sender-label">
+            ${mine ? "You" : escapeHtml(activeChatUserName || "User")}
+          </div>
 
-            <div
-              class="chat-message ${
-                mine
-                  ? "mine"
-                  : "theirs"
-              }"
-            >
+          <div class="chat-bubble">
+            ${escapeHtml(message.content)}
+          </div>
 
-              <div
-                class="chat-bubble"
-              >
+          <div class="chat-time muted small">
+            ${formatTime(message.created_at)}
+          </div>
 
-                ${escapeHtml(
-                  message.content
-                )}
+        </div>
 
-              </div>
+      `;
 
+    }).join("");
 
-              <div
-                class="muted small"
-              >
+  if (wasNearBottom) {
 
-                ${formatTime(
-                  message.created_at
-                )}
+    requestAnimationFrame(() => {
 
-              </div>
+      element.scrollTop =
+        element.scrollHeight;
 
-            </div>
-
-          `;
-
-        }
-      )
-      .join("");
-
-
-  messagesElement.scrollTop =
-    messagesElement.scrollHeight;
-
+    });
+  }
 }
 
 
@@ -1959,238 +1205,130 @@ async function loadActiveChat() {
 // SEND MESSAGE
 // ============================================================
 
-$("chatForm")
-  .addEventListener(
-    "submit",
-    async event => {
+$("chatForm")?.addEventListener(
+  "submit",
+  async event => {
 
-      event.preventDefault();
+    event.preventDefault();
 
+    if (!currentUser) return;
 
-      if (!currentUser) {
+    if (!activeChatUserId) {
 
-        return;
+      setMessage(
+        "chatMessage",
+        "Select a person first."
+      );
 
-      }
-
-
-      if (!activeChatUserId) {
-
-        setMessage(
-          "chatMessage",
-          "Select a person first."
-        );
-
-        return;
-
-      }
-
-
-      const input =
-        $("messageText");
-
-
-      const content =
-        input
-          .value
-          .trim();
-
-
-      if (!content) {
-
-        return;
-
-      }
-
-
-      const sendButton =
-        $("chatForm")
-          .querySelector(
-            "button"
-          );
-
-
-      if (sendButton) {
-
-        sendButton.disabled =
-          true;
-
-      }
-
-
-      try {
-
-        const {
-          error
-        } =
-          await supabaseClient
-            .from("messages")
-            .insert({
-
-              sender_id:
-                currentUser.id,
-
-              receiver_id:
-                activeChatUserId,
-
-              content
-
-            });
-
-
-        if (error) {
-
-          throw error;
-
-        }
-
-
-        input.value = "";
-
-
-        setMessage(
-          "chatMessage",
-          "Message sent.",
-          true
-        );
-
-
-        await loadActiveChat();
-
-
-        await loadConversations();
-
-
-      } catch (error) {
-
-        setMessage(
-          "chatMessage",
-          error.message ||
-          "Could not send message."
-        );
-
-      } finally {
-
-        if (sendButton) {
-
-          sendButton.disabled =
-            false;
-
-        }
-
-      }
-
+      return;
     }
-  );
 
+    const input =
+      $("messageText");
 
-// ============================================================
-// BACK TO CONVERSATIONS
-// ============================================================
+    const content =
+      input.value.trim();
 
-$("backToConversations")
-  .addEventListener(
-    "click",
-    async () => {
+    if (!content) return;
 
-      activeChatUserId =
-        null;
+    const button =
+      $("chatForm")
+        .querySelector("button");
 
+    if (button)
+      button.disabled = true;
 
-      activeChatUserName =
-        null;
+    try {
 
+      const { error } =
+        await supabaseClient
+          .from("messages")
+          .insert({
+            sender_id:
+              currentUser.id,
+            receiver_id:
+              activeChatUserId,
+            content
+          });
 
-      $("chatTitle")
-        .textContent =
-        "Messages";
+      if (error) throw error;
 
-
-      $("chatSubtitle")
-        .textContent =
-        "Select a conversation";
-
-
-      hide(
-        $("activeChat")
-      );
-
-
-      hide(
-        $("backToConversations")
-      );
-
-
-      show(
-        $("conversationList")
-      );
-
+      input.value = "";
 
       setMessage(
         "chatMessage",
         ""
       );
 
+      await loadActiveChat();
 
       await loadConversations();
 
+      input.focus();
+
+    } catch (error) {
+
+      setMessage(
+        "chatMessage",
+        error.message ||
+        "Could not send message."
+      );
+
+    } finally {
+
+      if (button)
+        button.disabled = false;
+    }
+
+  }
+);
+
+
+// ============================================================
+// ENTER TO SEND
+// ============================================================
+
+$("messageText")?.addEventListener(
+  "keydown",
+  event => {
+
+    if (
+      event.key === "Enter" &&
+      !event.shiftKey
+    ) {
+
+      event.preventDefault();
+
+      $("chatForm")
+        ?.requestSubmit();
+    }
+
+  }
+);
+
+
+// ============================================================
+// BACK
+// ============================================================
+
+$("backToConversations")
+  ?.addEventListener(
+    "click",
+    async () => {
+
+      activeChatUserId = null;
+      activeChatUserName = null;
+
+      showConversationList();
+
+      setMessage(
+        "chatMessage",
+        ""
+      );
+
+      await loadConversations();
     }
   );
-
-
-// ============================================================
-// SHOW MESSAGES PAGE
-// ============================================================
-
-async function showMessagesPage() {
-
-  show(
-    $("homeView")
-  );
-
-
-  hide(
-    $("searchView")
-  );
-
-
-  const card =
-    $("messagesCard");
-
-
-  card?.scrollIntoView({
-
-    behavior: "smooth",
-
-    block: "start"
-
-  });
-
-
-  document
-    .querySelectorAll(
-      ".nav-item"
-    )
-    .forEach(
-      item => {
-
-        item.classList
-          .remove(
-            "active"
-          );
-
-      }
-    );
-
-
-  document
-    .querySelector(
-      '[data-page="messages"]'
-    )
-    ?.classList
-    .add("active");
-
-}
 
 
 // ============================================================
@@ -2199,38 +1337,19 @@ async function showMessagesPage() {
 
 function subscribeRealtime() {
 
-  if (
-    realtimeChannel
-  ) {
+  if (realtimeChannel) {
 
     supabaseClient
       .removeChannel(
         realtimeChannel
       );
-
-    realtimeChannel =
-      null;
-
   }
-
-
-  if (!currentUser) {
-
-    return;
-
-  }
-
 
   realtimeChannel =
     supabaseClient
       .channel(
-        `connectapp-live-${currentUser.id}`
+        `connectapp-${currentUser.id}`
       )
-
-
-      // ======================================================
-      // POSTS
-      // ======================================================
 
       .on(
         "postgres_changes",
@@ -2239,17 +1358,8 @@ function subscribeRealtime() {
           schema: "public",
           table: "posts"
         },
-        () => {
-
-          loadPosts();
-
-        }
+        () => loadPosts()
       )
-
-
-      // ======================================================
-      // LIKES
-      // ======================================================
 
       .on(
         "postgres_changes",
@@ -2258,17 +1368,8 @@ function subscribeRealtime() {
           schema: "public",
           table: "likes"
         },
-        () => {
-
-          loadPosts();
-
-        }
+        () => loadPosts()
       )
-
-
-      // ======================================================
-      // COMMENTS
-      // ======================================================
 
       .on(
         "postgres_changes",
@@ -2277,22 +1378,13 @@ function subscribeRealtime() {
           schema: "public",
           table: "comments"
         },
-        () => {
-
-          loadPosts();
-
-        }
+        () => loadPosts()
       )
-
-
-      // ======================================================
-      // MESSAGES
-      // ======================================================
 
       .on(
         "postgres_changes",
         {
-          event: "*",
+          event: "INSERT",
           schema: "public",
           table: "messages"
         },
@@ -2301,162 +1393,318 @@ function subscribeRealtime() {
           const message =
             payload.new;
 
+          if (!message) return;
 
-          if (!message) {
-
-            return;
-
-          }
-
-
-          const belongsToCurrentUser =
+          const isMine =
             message.sender_id ===
-              currentUser.id ||
+            currentUser.id;
+
+          const involvesMe =
+            isMine ||
             message.receiver_id ===
-              currentUser.id;
+            currentUser.id;
 
-
-          if (!belongsToCurrentUser) {
-
+          if (!involvesMe)
             return;
 
-          }
+          const otherUserId =
+            isMine
+              ? message.receiver_id
+              : message.sender_id;
 
+          const activeConversation =
+            activeChatUserId ===
+            otherUserId;
 
           if (
-            activeChatUserId &&
-            (
-              (
-                message.sender_id ===
-                  currentUser.id &&
-                message.receiver_id ===
-                  activeChatUserId
-              )
-              ||
-              (
-                message.sender_id ===
-                  activeChatUserId &&
-                message.receiver_id ===
-                  currentUser.id
-              )
-            )
+            !isMine &&
+            !activeConversation
+          ) {
+
+            unreadMessages.set(
+              otherUserId,
+              (unreadMessages.get(otherUserId) || 0) + 1
+            );
+
+            updateMessageBadge();
+
+            notifyNewMessage(
+              otherUserId
+            );
+          }
+
+          if (
+            activeConversation
           ) {
 
             loadActiveChat();
 
           }
 
-
           loadConversations();
-
         }
       )
 
-
       .subscribe();
-
 }
 
 
 // ============================================================
-// SESSION RENDER
+// MESSAGE BADGE
 // ============================================================
 
-async function renderSession(
-  session
-) {
+function updateMessageBadge() {
 
-  currentUser =
-    session?.user ||
-    null;
+  const badge =
+    $("messageBadge");
 
+  if (!badge) return;
 
-  if (currentUser) {
+  const total =
+    [...unreadMessages.values()]
+      .reduce(
+        (sum, value) =>
+          sum + value,
+        0
+      );
 
-    hide(
-      $("authView")
-    );
+  if (total <= 0) {
 
+    hide(badge);
 
-    show(
-      $("homeView")
-    );
-
-
-    show(
-      $("logoutBtn")
-    );
-
-
-    show(
-      $("bottomNav")
-    );
-
-
-    await loadProfile();
-
-
-    await loadPosts();
-
-
-    await loadConversations();
-
-
-    subscribeRealtime();
-
+    badge.textContent = "0";
 
   } else {
 
-    show(
-      $("authView")
+    show(badge);
+
+    badge.textContent =
+      total > 99
+        ? "99+"
+        : String(total);
+  }
+}
+
+
+// ============================================================
+// BROWSER NOTIFICATION
+// ============================================================
+
+async function notifyNewMessage(userId) {
+
+  if (
+    !("Notification" in window)
+  ) return;
+
+  if (
+    Notification.permission ===
+    "default"
+  ) {
+
+    try {
+
+      await Notification.requestPermission();
+
+    } catch {
+
+      return;
+    }
+  }
+
+  if (
+    Notification.permission !==
+    "granted"
+  ) return;
+
+  try {
+
+    const { data } =
+      await supabaseClient
+        .from("profiles")
+        .select("name")
+        .eq("id", userId)
+        .maybeSingle();
+
+    const name =
+      data?.name ||
+      "Someone";
+
+    new Notification(
+      "New message",
+      {
+        body:
+          `New message from ${name}`,
+        tag:
+          `connectapp-message-${userId}`
+      }
     );
 
+  } catch {
 
-    hide(
-      $("homeView")
+    // Notification failure should never break chat.
+  }
+}
+
+
+// ============================================================
+// NAVIGATION
+// ============================================================
+
+function activateNav(page) {
+
+  document
+    .querySelectorAll(".nav-item")
+    .forEach(item => {
+
+      item.classList.toggle(
+        "active",
+        item.dataset.page === page
+      );
+
+    });
+}
+
+
+const bottomNav =
+  $("bottomNav");
+
+bottomNav
+  ?.querySelectorAll(".nav-item")
+  .forEach(button => {
+
+    button.addEventListener(
+      "click",
+      async () => {
+
+        const page =
+          button.dataset.page;
+
+        activateNav(page);
+
+        if (page === "home") {
+
+          show($("homeView"));
+          hide($("searchView"));
+
+          window.scrollTo({
+            top: 0,
+            behavior: "smooth"
+          });
+
+          await loadPosts();
+
+        }
+
+        else if (page === "search") {
+
+          hide($("homeView"));
+          show($("searchView"));
+
+          window.scrollTo({
+            top: 0,
+            behavior: "smooth"
+          });
+
+          $("userSearch")?.focus();
+
+        }
+
+        else if (page === "create") {
+
+          show($("homeView"));
+          hide($("searchView"));
+
+          $("createCard")
+            ?.scrollIntoView({
+              behavior: "smooth",
+              block: "start"
+            });
+
+        }
+
+        else if (page === "messages") {
+
+          show($("homeView"));
+          hide($("searchView"));
+
+          $("messagesCard")
+            ?.scrollIntoView({
+              behavior: "smooth",
+              block: "start"
+            });
+
+          if (!activeChatUserId) {
+
+            await loadConversations();
+          }
+        }
+
+        else if (page === "profile") {
+
+          show($("homeView"));
+          hide($("searchView"));
+
+          $("profileCard")
+            ?.scrollIntoView({
+              behavior: "smooth",
+              block: "start"
+            });
+        }
+
+      }
     );
 
-
-    hide(
-      $("searchView")
-    );
+  });
 
 
-    hide(
-      $("logoutBtn")
-    );
+// ============================================================
+// SESSION
+// ============================================================
 
+async function renderSession(session) {
 
-    hide(
-      $("bottomNav")
-    );
+  currentUser =
+    session?.user || null;
 
+  if (currentUser) {
 
-    activeChatUserId =
-      null;
+    hide($("authView"));
 
+    show($("homeView"));
+    show($("logoutBtn"));
+    show($("bottomNav"));
 
-    activeChatUserName =
-      null;
+    await loadProfile();
+    await loadPosts();
+    await loadConversations();
 
+    subscribeRealtime();
 
-    if (
-      realtimeChannel
-    ) {
+  } else {
+
+    show($("authView"));
+
+    hide($("homeView"));
+    hide($("searchView"));
+    hide($("logoutBtn"));
+    hide($("bottomNav"));
+
+    activeChatUserId = null;
+    activeChatUserName = null;
+
+    unreadMessages.clear();
+    updateMessageBadge();
+
+    if (realtimeChannel) {
 
       await supabaseClient
         .removeChannel(
           realtimeChannel
         );
 
-
-      realtimeChannel =
-        null;
-
+      realtimeChannel = null;
     }
-
   }
-
 }
 
 
@@ -2464,24 +1712,21 @@ async function renderSession(
 // AUTH STATE
 // ============================================================
 
-supabaseClient
-  .auth
+supabaseClient.auth
   .onAuthStateChange(
     (_event, session) => {
 
-      renderSession(
-        session
-      );
+      renderSession(session);
 
     }
   );
 
 
 // ============================================================
-// INITIAL SESSION
+// INITIALIZATION
 // ============================================================
 
-(async function () {
+(async function() {
 
   try {
 
@@ -2489,7 +1734,7 @@ supabaseClient
       !window.SUPABASE_URL ||
       !window.SUPABASE_ANON_KEY ||
       window.SUPABASE_URL.includes(
-        "YOUR-PROJECT"
+        "YOUR_SUPABASE"
       ) ||
       window.SUPABASE_ANON_KEY.includes(
         "YOUR_SUPABASE"
@@ -2502,30 +1747,19 @@ supabaseClient
       );
 
       return;
-
     }
 
-
-    const {
-      data,
-      error
-    } =
+    const { data, error } =
       await supabaseClient
         .auth
         .getSession();
 
-
-    if (error) {
-
+    if (error)
       throw error;
-
-    }
-
 
     await renderSession(
       data.session
     );
-
 
   } catch (error) {
 
@@ -2534,236 +1768,75 @@ supabaseClient
       error
     );
 
-
     setMessage(
       "authMessage",
       error.message ||
       "Could not initialize application."
     );
-
   }
 
 })();
 
 
 // ============================================================
-// MOBILE NAVIGATION
+// HELPERS
 // ============================================================
 
-const bottomNav =
-  $("bottomNav");
-
-
-if (bottomNav) {
-
-  bottomNav
-    .querySelectorAll(
-      ".nav-item"
-    )
-    .forEach(
-      button => {
-
-        button.addEventListener(
-          "click",
-          async () => {
-
-            const page =
-              button.dataset.page;
-
-
-            bottomNav
-              .querySelectorAll(
-                ".nav-item"
-              )
-              .forEach(
-                item => {
-
-                  item.classList
-                    .remove(
-                      "active"
-                    );
-
-                }
-              );
-
-
-            button.classList.add(
-              "active"
-            );
-
-
-            // =================================================
-            // HOME
-            // =================================================
-
-            if (
-              page === "home"
-            ) {
-
-              show(
-                $("homeView")
-              );
-
-
-              hide(
-                $("searchView")
-              );
-
-
-              await loadPosts();
-
-
-              window.scrollTo({
-
-                top: 0,
-
-                behavior: "smooth"
-
-              });
-
-            }
-
-
-            // =================================================
-            // SEARCH
-            // =================================================
-
-            else if (
-              page === "search"
-            ) {
-
-              show(
-                $("searchView")
-              );
-
-
-              show(
-                $("homeView")
-              );
-
-
-              $("searchView")
-                ?.scrollIntoView({
-
-                  behavior:
-                    "smooth",
-
-                  block:
-                    "start"
-
-                });
-
-
-              $("userSearch")
-                ?.focus();
-
-            }
-
-
-            // =================================================
-            // CREATE
-            // =================================================
-
-            else if (
-              page === "create"
-            ) {
-
-              show(
-                $("homeView")
-              );
-
-
-              hide(
-                $("searchView")
-              );
-
-
-              $("createPostCard")
-                ?.scrollIntoView({
-
-                  behavior:
-                    "smooth",
-
-                  block:
-                    "start"
-
-                });
-
-            }
-
-
-            // =================================================
-            // MESSAGES
-            // =================================================
-
-            else if (
-              page === "messages"
-            ) {
-
-              await showMessagesPage();
-
-
-              if (
-                !activeChatUserId
-              ) {
-
-                await loadConversations();
-
-              }
-
-            }
-
-
-            // =================================================
-            // PROFILE
-            // =================================================
-
-            else if (
-              page === "profile"
-            ) {
-
-              show(
-                $("homeView")
-              );
-
-
-              hide(
-                $("searchView")
-              );
-
-
-              $("profileCard")
-                ?.scrollIntoView({
-
-                  behavior:
-                    "smooth",
-
-                  block:
-                    "start"
-
-                });
-
-            }
-
-          }
-        );
-
+function formatTime(value) {
+
+  if (!value)
+    return "";
+
+  const date =
+    new Date(value);
+
+  const now =
+    new Date();
+
+  if (
+    date.toDateString() ===
+    now.toDateString()
+  ) {
+
+    return date.toLocaleTimeString(
+      [],
+      {
+        hour: "numeric",
+        minute: "2-digit"
       }
     );
+  }
 
+  return date.toLocaleDateString(
+    [],
+    {
+      month: "short",
+      day: "numeric"
+    }
+  );
 }
 
 
-// ============================================================
-// REFRESH POSTS
-// ============================================================
+function escapeHtml(value) {
 
-$("refreshPostsBtn")
-  ?.addEventListener(
-    "click",
-    async () => {
+  return String(
+    value ?? ""
+  ).replace(
+    /[&<>"']/g,
+    character => ({
 
-      await loadPosts();
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#039;"
 
-    }
+    })[character]
   );
+}
+
+
+function escapeAttr(value) {
+
+  return escapeHtml(value);
+}
