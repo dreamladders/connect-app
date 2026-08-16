@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+
   <meta charset="UTF-8">
 
   <meta
@@ -24,13 +26,16 @@
   >
 
   <title>ConnectApp</title>
+
 </head>
+
 
 <body>
 
-  <!-- =========================
+
+  <!-- =====================================================
        TOP BAR
-  ========================== -->
+  ====================================================== -->
 
   <header class="topbar">
 
@@ -38,9 +43,11 @@
       ConnectApp
     </div>
 
+
     <button
       id="logoutBtn"
       class="hidden"
+      type="button"
     >
       Logout
     </button>
@@ -48,30 +55,32 @@
   </header>
 
 
-  <!-- =========================
+
+  <!-- =====================================================
        MAIN
-  ========================== -->
+  ====================================================== -->
 
   <main>
 
 
-    <!-- =========================
+    <!-- ===================================================
          AUTH VIEW
-    ========================== -->
+    ==================================================== -->
 
     <section
       id="authView"
       class="card"
     >
 
-      <h1>ConnectApp</h1>
+      <h1>
+        ConnectApp
+      </h1>
+
 
       <p class="muted">
         Connect with people.
       </p>
 
-
-      <!-- LOGIN / REGISTER TABS -->
 
       <div class="tabs">
 
@@ -83,6 +92,7 @@
           Login
         </button>
 
+
         <button
           id="registerTab"
           type="button"
@@ -93,7 +103,6 @@
       </div>
 
 
-      <!-- AUTH FORM -->
 
       <form id="authForm">
 
@@ -105,6 +114,7 @@
           required
         >
 
+
         <input
           id="password"
           type="password"
@@ -114,6 +124,7 @@
           required
         >
 
+
         <input
           id="name"
           class="hidden"
@@ -122,6 +133,7 @@
           maxlength="100"
           autocomplete="name"
         >
+
 
         <button
           id="authSubmit"
@@ -142,45 +154,44 @@
 
 
 
+    <!-- ===================================================
+         SEARCH VIEW
+    ==================================================== -->
+
+    <section
+      id="searchView"
+      class="card hidden"
+    >
+
+      <h2>
+        Search People
+      </h2>
 
 
-    <!-- =========================
-     SEARCH VIEW
-========================== -->
+      <input
+        id="userSearch"
+        type="search"
+        placeholder="Search by name..."
+        maxlength="100"
+        autocomplete="off"
+      >
 
-<section
-  id="searchView"
-  class="card hidden"
->
 
-  <h2>Search People</h2>
+      <div id="searchResults">
 
-  <input
-    id="userSearch"
-    type="search"
-    placeholder="Search by name..."
-    maxlength="100"
-  >
+        <p class="muted">
+          Search for people.
+        </p>
 
-  <div
-    id="searchResults"
-  >
-    <p class="muted">
-      Search for people.
-    </p>
-  </div>
+      </div>
 
-</section>
+    </section>
 
 
 
-    
-
-    
-
-    <!-- =========================
+    <!-- ===================================================
          HOME VIEW
-    ========================== -->
+    ==================================================== -->
 
     <section
       id="homeView"
@@ -188,15 +199,16 @@
     >
 
 
-      <!-- =========================
+      <!-- =================================================
            WELCOME
-      ========================== -->
+      ================================================== -->
 
       <div class="card">
 
         <h2 id="welcome">
           Welcome
         </h2>
+
 
         <p class="muted">
           Your social feed
@@ -205,15 +217,17 @@
       </div>
 
 
-      <!-- =========================
+
+      <!-- =================================================
            CREATE POST
-      ========================== -->
+      ================================================== -->
 
       <div class="card">
 
         <h2>
           Create Post
         </h2>
+
 
         <form id="postForm">
 
@@ -225,9 +239,10 @@
           ></textarea>
 
 
-          <label>
+          <label for="postImage">
             Add image
           </label>
+
 
           <input
             id="postImage"
@@ -253,9 +268,10 @@
       </div>
 
 
-      <!-- =========================
+
+      <!-- =================================================
            PROFILE
-      ========================== -->
+      ================================================== -->
 
       <div class="card">
 
@@ -271,6 +287,7 @@
             type="text"
             maxlength="100"
             placeholder="Your name"
+            autocomplete="name"
             required
           >
 
@@ -299,9 +316,10 @@
       </div>
 
 
-      <!-- =========================
+
+      <!-- =================================================
            POSTS
-      ========================== -->
+      ================================================== -->
 
       <div class="card">
 
@@ -310,20 +328,21 @@
         </h2>
 
 
-        <div
-          id="posts"
-        >
+        <div id="posts">
+
           <p class="muted">
             Loading posts...
           </p>
+
         </div>
 
       </div>
 
 
-      <!-- =========================
-           CHAT
-      ========================== -->
+
+      <!-- =================================================
+           MESSAGES
+      ================================================== -->
 
       <div class="card">
 
@@ -332,135 +351,262 @@
         </h2>
 
 
-        <p class="muted">
-          Enter another user's UUID to send a message.
-        </p>
+        <div class="chat-box">
 
 
-        <input
-          id="recipientId"
-          type="text"
-          placeholder="Recipient user UUID"
-        >
+          <!-- CHAT HEADER -->
+
+          <div class="chat-header">
 
 
-        <input
-          id="messageText"
-          type="text"
-          maxlength="2000"
-          placeholder="Write a message..."
-        >
+            <button
+              id="backToConversations"
+              type="button"
+              class="chat-back"
+              aria-label="Back to conversations"
+            >
+              ←
+            </button>
 
 
-        <button
-          id="sendMessageBtn"
-          type="button"
-        >
-          Send Message
-        </button>
+            <div>
+
+              <strong id="chatTitle">
+                Messages
+              </strong>
 
 
-        <p
-          id="chatMessage"
-          class="message"
-        ></p>
+              <div
+                id="chatSubtitle"
+                class="muted small"
+              >
+                Select a conversation
+              </div>
+
+            </div>
+
+          </div>
 
 
-        <div
-          id="messages"
-        ></div>
+
+          <!-- CONVERSATION LIST -->
+
+          <div
+            id="conversationList"
+            class="conversation-list"
+          >
+
+            <p class="muted">
+              Loading conversations...
+            </p>
+
+          </div>
+
+
+
+          <!-- ACTIVE CHAT -->
+
+          <div
+            id="activeChat"
+            class="active-chat hidden"
+          >
+
+
+            <div
+              id="chatMessages"
+              class="chat-messages"
+            ></div>
+
+
+
+            <!-- MESSAGE FORM -->
+
+            <form
+              id="chatForm"
+              class="chat-input"
+            >
+
+              <input
+                id="messageText"
+                type="text"
+                maxlength="2000"
+                placeholder="Type a message..."
+                autocomplete="off"
+                required
+              >
+
+
+              <button
+                type="submit"
+                aria-label="Send message"
+              >
+                ➤
+              </button>
+
+            </form>
+
+          </div>
+
+
+
+          <!-- CHAT STATUS -->
+
+          <p
+            id="chatMessage"
+            class="message"
+          ></p>
+
+
+        </div>
 
       </div>
 
+
     </section>
 
-<!-- =========================
-     MOBILE BOTTOM NAVIGATION
-========================== -->
 
-<nav
-  id="bottomNav"
-  class="bottom-nav hidden"
-  aria-label="Main navigation"
->
 
-  <button
-    type="button"
-    data-page="home"
-    class="nav-item active"
-  >
-    <span>🏠</span>
-    <small>Home</small>
-  </button>
+    <!-- ===================================================
+         MOBILE BOTTOM NAVIGATION
+    ==================================================== -->
 
-  <button
-    type="button"
-    data-page="search"
-    class="nav-item"
-  >
-    <span>🔍</span>
-    <small>Search</small>
-  </button>
+    <nav
+      id="bottomNav"
+      class="bottom-nav hidden"
+      aria-label="Main navigation"
+    >
 
-  <button
-    type="button"
-    data-page="create"
-    class="nav-item create"
-  >
-    <span>＋</span>
-    <small>Create</small>
-  </button>
 
-  <button
-    type="button"
-    data-page="messages"
-    class="nav-item"
-  >
-    <span>💬</span>
-    <small>Messages</small>
-  </button>
+      <button
+        type="button"
+        data-page="home"
+        class="nav-item active"
+        aria-label="Home"
+      >
 
-  <button
-    type="button"
-    data-page="profile"
-    class="nav-item"
-  >
-    <span>👤</span>
-    <small>Profile</small>
-  </button>
+        <span>
+          🏠
+        </span>
 
-</nav>
+        <small>
+          Home
+        </small>
 
-    
-    
+      </button>
+
+
+
+      <button
+        type="button"
+        data-page="search"
+        class="nav-item"
+        aria-label="Search"
+      >
+
+        <span>
+          🔍
+        </span>
+
+        <small>
+          Search
+        </small>
+
+      </button>
+
+
+
+      <button
+        type="button"
+        data-page="create"
+        class="nav-item create"
+        aria-label="Create"
+      >
+
+        <span>
+          ＋
+        </span>
+
+        <small>
+          Create
+        </small>
+
+      </button>
+
+
+
+      <button
+        type="button"
+        data-page="messages"
+        class="nav-item"
+        aria-label="Messages"
+      >
+
+        <span>
+          💬
+        </span>
+
+        <small>
+          Messages
+        </small>
+
+      </button>
+
+
+
+      <button
+        type="button"
+        data-page="profile"
+        class="nav-item"
+        aria-label="Profile"
+      >
+
+        <span>
+          👤
+        </span>
+
+        <small>
+          Profile
+        </small>
+
+      </button>
+
+
+    </nav>
+
+
   </main>
 
 
-  <!-- =========================
+
+  <!-- =====================================================
        SUPABASE
-  ========================== -->
+  ====================================================== -->
 
   <script
     src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
   ></script>
 
 
-  <!-- =========================
-       APP CONFIG
-  ========================== -->
+
+  <!-- =====================================================
+       CONFIG
+  ====================================================== -->
 
   <script
     src="config.js"
   ></script>
 
 
-  <!-- =========================
+
+  <!-- =====================================================
        APPLICATION
-  ========================== -->
+  ====================================================== -->
 
   <script
     src="app.js"
   ></script>
 
+
 </body>
+
 </html>
