@@ -578,3 +578,40 @@ label {
 
 }
 
+
+/* =========================
+   SEARCH USERS
+========================= */
+
+.search-user {
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  gap: 12px;
+
+  padding: 12px 0;
+
+  border-bottom:
+    1px solid #e5e7eb;
+}
+
+
+.search-user button {
+  width: auto;
+
+  margin: 0;
+
+  padding:
+    8px 12px;
+
+  white-space: nowrap;
+}
+
+
+.search-user p {
+  margin:
+    4px 0 0;
+}
