@@ -1333,6 +1333,7 @@ async function renderSession(
             $("logoutBtn")
         );
 
+        show($("bottomNav"));
 
         await loadProfile();
 
@@ -1358,6 +1359,10 @@ async function renderSession(
             $("logoutBtn")
         );
 
+
+        hide($("bottomNav"));
+
+        
 
         if (realtimeChannel) {
 
