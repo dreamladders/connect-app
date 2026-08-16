@@ -1614,15 +1614,33 @@ if (bottomNav) {
 
 
                     // Search
+                    
+
+
+
+
+
+
                     else if (
-                        page === "search"
-                    ) {
+    page === "search"
+) {
 
-                        alert(
-                            "Search feature coming next."
-                        );
+    $("searchView")
+        .classList
+        .remove("hidden");
 
-                    }
+    $("searchView")
+        .scrollIntoView({
+            behavior: "smooth",
+            block: "start"
+        });
+
+}
+
+
+
+
+                    
 
                 }
             );
