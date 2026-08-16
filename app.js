@@ -1491,3 +1491,137 @@ function escapeAttr(
     );
 
 }
+
+
+
+
+
+// ============================================================
+// MOBILE NAVIGATION
+// ============================================================
+
+const bottomNav = $("bottomNav");
+
+if (bottomNav) {
+
+    bottomNav
+        .querySelectorAll(".nav-item")
+        .forEach(button => {
+
+            button.addEventListener(
+                "click",
+                async () => {
+
+                    const page =
+                        button.dataset.page;
+
+
+                    // Active button
+                    bottomNav
+                        .querySelectorAll(".nav-item")
+                        .forEach(item => {
+
+                            item.classList.remove(
+                                "active"
+                            );
+
+                        });
+
+
+                    button.classList.add(
+                        "active"
+                    );
+
+
+                    // Home
+                    if (page === "home") {
+
+                        await loadPosts();
+
+                        window.scrollTo({
+                            top: 0,
+                            behavior: "smooth"
+                        });
+
+                    }
+
+
+                    // Create
+                    else if (
+                        page === "create"
+                    ) {
+
+                        const postForm =
+                            $("postForm");
+
+                        if (postForm) {
+
+                            postForm.scrollIntoView({
+                                behavior: "smooth",
+                                block: "start"
+                            });
+
+                        }
+
+                    }
+
+
+                    // Messages
+                    else if (
+                        page === "messages"
+                    ) {
+
+                        const messages =
+                            $("messages");
+
+                        if (messages) {
+
+                            messages.scrollIntoView({
+                                behavior: "smooth",
+                                block: "start"
+                            });
+
+                            await loadMessages();
+
+                        }
+
+                    }
+
+
+                    // Profile
+                    else if (
+                        page === "profile"
+                    ) {
+
+                        const profileForm =
+                            $("profileForm");
+
+                        if (profileForm) {
+
+                            profileForm.scrollIntoView({
+                                behavior: "smooth",
+                                block: "start"
+                            });
+
+                        }
+
+                    }
+
+
+                    // Search
+                    else if (
+                        page === "search"
+                    ) {
+
+                        alert(
+                            "Search feature coming next."
+                        );
+
+                    }
+
+                }
+            );
+
+        });
+
+}
