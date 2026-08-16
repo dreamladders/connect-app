@@ -1630,3 +1630,186 @@ if (bottomNav) {
         });
 
 }
+
+
+
+
+
+
+// ============================================================
+// USER SEARCH
+// ============================================================
+
+let searchTimer = null;
+
+const userSearch = $("userSearch");
+
+if (userSearch) {
+
+    userSearch.addEventListener(
+        "input",
+        () => {
+
+            clearTimeout(searchTimer);
+
+            searchTimer = setTimeout(
+                searchUsers,
+                400
+            );
+
+        }
+    );
+
+}
+
+
+async function searchUsers() {
+
+    const query =
+        userSearch
+            ?.value
+            .trim();
+
+
+    const results =
+        $("searchResults");
+
+
+    if (!results) {
+
+        return;
+
+    }
+
+
+    if (!query) {
+
+        results.innerHTML =
+            `<p class="muted">
+                Search for people.
+            </p>`;
+
+        return;
+
+    }
+
+
+    if (!currentUser) {
+
+        return;
+
+    }
+
+
+    const {
+        data,
+        error
+    } =
+        await supabaseClient
+            .from("profiles")
+            .select(
+                "id,name,bio,avatar_url"
+            )
+            .ilike(
+                "name",
+                `%${query}%`
+            )
+            .neq(
+                "id",
+                currentUser.id
+            )
+            .limit(20);
+
+
+    if (error) {
+
+        results.innerHTML =
+            `<p class="error">
+                ${escapeHtml(
+                    error.message
+                )}
+            </p>`;
+
+        return;
+
+    }
+
+
+    if (!data?.length) {
+
+        results.innerHTML =
+            `<p class="muted">
+                No users found.
+            </p>`;
+
+        return;
+
+    }
+
+
+    results.innerHTML =
+        data
+            .map(
+                user => `
+
+                    <div class="search-user">
+
+                        <div>
+
+                            <strong>
+                                ${escapeHtml(
+                                    user.name ||
+                                    "User"
+                                )}
+                            </strong>
+
+                            <p class="muted small">
+
+                                ${escapeHtml(
+                                    user.bio || ""
+                                )}
+
+                            </p>
+
+                        </div>
+
+
+                        <button
+                            type="button"
+                            onclick="startChat(
+                                '${user.id}'
+                            )"
+                        >
+                            Message
+                        </button>
+
+                    </div>
+
+                `
+            )
+            .join("");
+
+}
+
+
+// ============================================================
+// START CHAT
+// ============================================================
+
+window.startChat =
+    function(userId) {
+
+        $("recipientId").value =
+            userId;
+
+
+        $("messageText").focus();
+
+
+        $("messages")
+            .scrollIntoView({
+                behavior: "smooth"
+            });
+
+    };
+
