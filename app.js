@@ -156,29 +156,57 @@ $("authForm").addEventListener(
 
             } else {
 
+
+
+
+
+
+
                 const {
-                    data,
-                    error
-                } =
-                    await supabaseClient
-                        .auth
-                        .signUp({
+    data,
+    error
+} =
+    await supabaseClient
+        .auth
+        .signUp({
 
-                            email,
+            email,
 
-                            password,
+            password,
 
-                            options: {
+            options: {
 
-                                data: {
+                data: {
 
-                                    name
+                    name
 
-                                }
+                },
 
-                            }
+                emailRedirectTo:
+                    "https://ancient-term-0459.dreamladdersservices.workers.dev/"
 
-                        });
+            }
+
+        });
+
+
+
+
+
+
+
+
+                
+
+
+
+
+
+
+
+
+                
+                
 
 
                 if (error) {
