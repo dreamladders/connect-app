@@ -1,7 +1,7 @@
 {
   "name": "ConnectApp",
   "short_name": "ConnectApp",
-  "description": "Connect with people, share posts and chat.",
+  "description": "Connect with people.",
   "start_url": "./",
   "display": "standalone",
   "background_color": "#f3f4f6",
