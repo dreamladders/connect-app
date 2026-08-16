@@ -1,20 +1,25 @@
-// ============================================
-// CONNECTAPP - SUPABASE CONFIG
-// ============================================
+
+
+// ============================================================
+// CONNECTAPP V3
+// Supabase Configuration
+// ============================================================
 //
 // IMPORTANT:
-// Put ONLY your public Supabase key here.
+// Use ONLY the Supabase public anon/publishable key here.
 //
 // NEVER put:
 // - service_role key
-// - secret key
 // - database password
-// - Cloudflare secret
+// - secret API keys
+// - Supabase management key
 //
-// ============================================
+// in this file.
+// ============================================================
 
 window.SUPABASE_URL =
   "https://dpbcsczbxduoasoagoly.supabase.co";
+
 
 window.SUPABASE_ANON_KEY =
   "sb_publishable_vd7TD9GlyJK1vJgI7bZPdw_mTGDGwlK";
