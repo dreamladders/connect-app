@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
 
   <meta charset="UTF-8">
@@ -13,6 +12,11 @@
   <meta
     name="theme-color"
     content="#111827"
+  >
+
+  <meta
+    name="description"
+    content="ConnectApp - Connect with people"
   >
 
   <link
@@ -29,584 +33,595 @@
 
 </head>
 
-
 <body>
 
+<!-- =========================================================
+     TOP BAR
+========================================================= -->
 
-  <!-- =====================================================
-       TOP BAR
-  ====================================================== -->
+<header class="topbar">
 
-  <header class="topbar">
+  <div class="logo">
+    ConnectApp
+  </div>
 
-    <div class="logo">
-      ConnectApp
+  <button
+    id="logoutBtn"
+    class="hidden secondary-btn"
+    type="button"
+  >
+    Logout
+  </button>
+
+</header>
+
+
+<!-- =========================================================
+     MAIN
+========================================================= -->
+
+<main>
+
+
+<!-- =========================================================
+     AUTH VIEW
+========================================================= -->
+
+<section
+  id="authView"
+  class="card auth-card"
+>
+
+  <h1>ConnectApp</h1>
+
+  <p class="muted">
+    Connect with people.
+  </p>
+
+
+  <div class="tabs">
+
+    <button
+      id="loginTab"
+      class="active"
+      type="button"
+    >
+      Login
+    </button>
+
+    <button
+      id="registerTab"
+      type="button"
+    >
+      Register
+    </button>
+
+  </div>
+
+
+  <form id="authForm">
+
+    <input
+      id="email"
+      type="email"
+      placeholder="Email"
+      autocomplete="email"
+      required
+    >
+
+    <input
+      id="password"
+      type="password"
+      placeholder="Password"
+      minlength="6"
+      autocomplete="current-password"
+      required
+    >
+
+    <input
+      id="name"
+      class="hidden"
+      type="text"
+      placeholder="Your name"
+      maxlength="100"
+      autocomplete="name"
+    >
+
+    <button
+      id="authSubmit"
+      type="submit"
+      class="primary-btn"
+    >
+      Login
+    </button>
+
+  </form>
+
+
+  <p
+    id="authMessage"
+    class="message"
+  ></p>
+
+</section>
+
+
+<!-- =========================================================
+     SEARCH VIEW
+========================================================= -->
+
+<section
+  id="searchView"
+  class="card hidden"
+>
+
+  <div class="section-header">
+
+    <div>
+
+      <h2>Search People</h2>
+
+      <p class="muted">
+        Find people by name.
+      </p>
+
     </div>
+
+  </div>
+
+
+  <input
+    id="userSearch"
+    type="search"
+    placeholder="Search by name..."
+    maxlength="100"
+    autocomplete="off"
+  >
+
+
+  <div id="searchResults">
+
+    <p class="muted">
+      Search for people.
+    </p>
+
+  </div>
+
+</section>
+
+
+<!-- =========================================================
+     HOME VIEW
+========================================================= -->
+
+<section
+  id="homeView"
+  class="hidden"
+>
+
+
+<!-- =========================================================
+     WELCOME
+========================================================= -->
+
+<div class="card">
+
+  <h2 id="welcome">
+    Welcome
+  </h2>
+
+  <p class="muted">
+    Your social feed
+  </p>
+
+</div>
+
+
+<!-- =========================================================
+     CREATE POST
+========================================================= -->
+
+<div
+  id="createPostCard"
+  class="card"
+>
+
+  <div class="section-header">
+
+    <div>
+
+      <h2>Create Post</h2>
+
+      <p class="muted">
+        Share something with ConnectApp.
+      </p>
+
+    </div>
+
+  </div>
+
+
+  <form id="postForm">
+
+    <textarea
+      id="postText"
+      maxlength="1000"
+      placeholder="What's on your mind?"
+      required
+    ></textarea>
+
+
+    <label
+      for="postImage"
+      class="file-label"
+    >
+      Add image
+    </label>
+
+    <input
+      id="postImage"
+      type="file"
+      accept="image/jpeg,image/png,image/webp,image/gif"
+    >
 
 
     <button
-      id="logoutBtn"
-      class="hidden"
-      type="button"
+      type="submit"
+      class="primary-btn"
     >
-      Logout
+      Publish Post
     </button>
 
-  </header>
+  </form>
 
 
+  <p
+    id="postMessage"
+    class="message"
+  ></p>
 
-  <!-- =====================================================
-       MAIN
-  ====================================================== -->
-
-  <main>
+</div>
 
 
-    <!-- ===================================================
-         AUTH VIEW
-    ==================================================== -->
+<!-- =========================================================
+     PROFILE
+========================================================= -->
 
-    <section
-      id="authView"
-      class="card"
-    >
+<div
+  id="profileCard"
+  class="card"
+>
 
-      <h1>
-        ConnectApp
-      </h1>
+  <div class="section-header">
 
+    <div>
+
+      <h2>My Profile</h2>
 
       <p class="muted">
-        Connect with people.
+        Manage your profile.
       </p>
 
+    </div>
 
-      <div class="tabs">
+  </div>
 
-        <button
-          id="loginTab"
-          class="active"
-          type="button"
+
+  <form id="profileForm">
+
+    <input
+      id="profileName"
+      type="text"
+      maxlength="100"
+      placeholder="Your name"
+      required
+    >
+
+
+    <textarea
+      id="bio"
+      maxlength="500"
+      placeholder="Write something about yourself..."
+    ></textarea>
+
+
+    <button
+      type="submit"
+      class="primary-btn"
+    >
+      Save Profile
+    </button>
+
+  </form>
+
+
+  <p
+    id="profileMessage"
+    class="message"
+  ></p>
+
+</div>
+
+
+<!-- =========================================================
+     POSTS
+========================================================= -->
+
+<div
+  id="postsCard"
+  class="card"
+>
+
+  <div class="section-header">
+
+    <div>
+
+      <h2>Posts</h2>
+
+      <p class="muted">
+        Latest posts from ConnectApp.
+      </p>
+
+    </div>
+
+    <button
+      id="refreshPostsBtn"
+      type="button"
+      class="icon-btn"
+      title="Refresh posts"
+    >
+      ↻
+    </button>
+
+  </div>
+
+
+  <div id="posts">
+
+    <p class="muted">
+      Loading posts...
+    </p>
+
+  </div>
+
+</div>
+
+
+<!-- =========================================================
+     MESSAGES
+========================================================= -->
+
+<div
+  id="messagesCard"
+  class="card"
+>
+
+  <div class="section-header">
+
+    <div>
+
+      <h2>Messages</h2>
+
+      <p class="muted">
+        Chat privately with people.
+      </p>
+
+    </div>
+
+  </div>
+
+
+  <div class="chat-box">
+
+
+    <!-- CHAT HEADER -->
+
+    <div class="chat-header">
+
+      <button
+        id="backToConversations"
+        type="button"
+        class="chat-back hidden"
+        aria-label="Back to conversations"
+      >
+        ←
+      </button>
+
+
+      <div>
+
+        <strong id="chatTitle">
+          Messages
+        </strong>
+
+        <div
+          id="chatSubtitle"
+          class="muted small"
         >
-          Login
-        </button>
-
-
-        <button
-          id="registerTab"
-          type="button"
-        >
-          Register
-        </button>
+          Select a conversation
+        </div>
 
       </div>
 
+    </div>
 
 
-      <form id="authForm">
+    <!-- CONVERSATIONS -->
+
+    <div
+      id="conversationList"
+      class="conversation-list"
+    >
+
+      <p class="muted">
+        Loading conversations...
+      </p>
+
+    </div>
+
+
+    <!-- ACTIVE CHAT -->
+
+    <div
+      id="activeChat"
+      class="active-chat hidden"
+    >
+
+      <div
+        id="chatMessages"
+        class="chat-messages"
+      ></div>
+
+
+      <form
+        id="chatForm"
+        class="chat-input"
+      >
 
         <input
-          id="email"
-          type="email"
-          placeholder="Email"
-          autocomplete="email"
-          required
-        >
-
-
-        <input
-          id="password"
-          type="password"
-          placeholder="Password"
-          minlength="6"
-          autocomplete="current-password"
-          required
-        >
-
-
-        <input
-          id="name"
-          class="hidden"
+          id="messageText"
           type="text"
-          placeholder="Your name"
-          maxlength="100"
-          autocomplete="name"
+          maxlength="2000"
+          placeholder="Type a message..."
+          autocomplete="off"
+          required
         >
-
 
         <button
-          id="authSubmit"
           type="submit"
+          aria-label="Send message"
         >
-          Login
+          ➤
         </button>
 
       </form>
 
+    </div>
 
-      <p
-        id="authMessage"
-        class="message"
-      ></p>
 
-    </section>
+    <p
+      id="chatMessage"
+      class="message"
+    ></p>
 
+  </div>
 
+</div>
 
-    <!-- ===================================================
-         SEARCH VIEW
-    ==================================================== -->
+</section>
 
-    <section
-      id="searchView"
-      class="card hidden"
-    >
 
-      <h2>
-        Search People
-      </h2>
+<!-- =========================================================
+     MOBILE BOTTOM NAVIGATION
+========================================================= -->
 
+<nav
+  id="bottomNav"
+  class="bottom-nav hidden"
+  aria-label="Main navigation"
+>
 
-      <input
-        id="userSearch"
-        type="search"
-        placeholder="Search by name..."
-        maxlength="100"
-        autocomplete="off"
-      >
+  <button
+    type="button"
+    data-page="home"
+    class="nav-item active"
+  >
 
+    <span>🏠</span>
 
-      <div id="searchResults">
+    <small>
+      Home
+    </small>
 
-        <p class="muted">
-          Search for people.
-        </p>
+  </button>
 
-      </div>
 
-    </section>
+  <button
+    type="button"
+    data-page="search"
+    class="nav-item"
+  >
 
+    <span>🔍</span>
 
+    <small>
+      Search
+    </small>
 
-    <!-- ===================================================
-         HOME VIEW
-    ==================================================== -->
+  </button>
 
-    <section
-      id="homeView"
-      class="hidden"
-    >
 
+  <button
+    type="button"
+    data-page="create"
+    class="nav-item create"
+  >
 
-      <!-- =================================================
-           WELCOME
-      ================================================== -->
+    <span>＋</span>
 
-      <div class="card">
+    <small>
+      Create
+    </small>
 
-        <h2 id="welcome">
-          Welcome
-        </h2>
+  </button>
 
 
-        <p class="muted">
-          Your social feed
-        </p>
+  <button
+    type="button"
+    data-page="messages"
+    class="nav-item"
+  >
 
-      </div>
+    <span>💬</span>
 
+    <small>
+      Messages
+    </small>
 
+  </button>
 
-      <!-- =================================================
-           CREATE POST
-      ================================================== -->
 
-      <div class="card">
+  <button
+    type="button"
+    data-page="profile"
+    class="nav-item"
+  >
 
-        <h2>
-          Create Post
-        </h2>
+    <span>👤</span>
 
+    <small>
+      Profile
+    </small>
 
-        <form id="postForm">
+  </button>
 
-          <textarea
-            id="postText"
-            maxlength="1000"
-            placeholder="What's on your mind?"
-            required
-          ></textarea>
+</nav>
 
 
-          <label for="postImage">
-            Add image
-          </label>
+</main>
 
 
-          <input
-            id="postImage"
-            type="file"
-            accept="image/*"
-          >
+<!-- =========================================================
+     SUPABASE
+========================================================= -->
 
+<script
+  src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
+></script>
 
-          <button
-            type="submit"
-          >
-            Publish Post
-          </button>
 
-        </form>
+<!-- =========================================================
+     CONFIG
+========================================================= -->
 
+<script src="config.js"></script>
 
-        <p
-          id="postMessage"
-          class="message"
-        ></p>
 
-      </div>
+<!-- =========================================================
+     APPLICATION
+========================================================= -->
 
-
-
-      <!-- =================================================
-           PROFILE
-      ================================================== -->
-
-      <div class="card">
-
-        <h2>
-          My Profile
-        </h2>
-
-
-        <form id="profileForm">
-
-          <input
-            id="profileName"
-            type="text"
-            maxlength="100"
-            placeholder="Your name"
-            autocomplete="name"
-            required
-          >
-
-
-          <textarea
-            id="bio"
-            maxlength="500"
-            placeholder="Write something about yourself..."
-          ></textarea>
-
-
-          <button
-            type="submit"
-          >
-            Save Profile
-          </button>
-
-        </form>
-
-
-        <p
-          id="profileMessage"
-          class="message"
-        ></p>
-
-      </div>
-
-
-
-      <!-- =================================================
-           POSTS
-      ================================================== -->
-
-      <div class="card">
-
-        <h2>
-          Posts
-        </h2>
-
-
-        <div id="posts">
-
-          <p class="muted">
-            Loading posts...
-          </p>
-
-        </div>
-
-      </div>
-
-
-
-      <!-- =================================================
-           MESSAGES
-      ================================================== -->
-
-      <div class="card">
-
-        <h2>
-          Messages
-        </h2>
-
-
-        <div class="chat-box">
-
-
-          <!-- CHAT HEADER -->
-
-          <div class="chat-header">
-
-
-            <button
-              id="backToConversations"
-              type="button"
-              class="chat-back"
-              aria-label="Back to conversations"
-            >
-              ←
-            </button>
-
-
-            <div>
-
-              <strong id="chatTitle">
-                Messages
-              </strong>
-
-
-              <div
-                id="chatSubtitle"
-                class="muted small"
-              >
-                Select a conversation
-              </div>
-
-            </div>
-
-          </div>
-
-
-
-          <!-- CONVERSATION LIST -->
-
-          <div
-            id="conversationList"
-            class="conversation-list"
-          >
-
-            <p class="muted">
-              Loading conversations...
-            </p>
-
-          </div>
-
-
-
-          <!-- ACTIVE CHAT -->
-
-          <div
-            id="activeChat"
-            class="active-chat hidden"
-          >
-
-
-            <div
-              id="chatMessages"
-              class="chat-messages"
-            ></div>
-
-
-
-            <!-- MESSAGE FORM -->
-
-            <form
-              id="chatForm"
-              class="chat-input"
-            >
-
-              <input
-                id="messageText"
-                type="text"
-                maxlength="2000"
-                placeholder="Type a message..."
-                autocomplete="off"
-                required
-              >
-
-
-              <button
-                type="submit"
-                aria-label="Send message"
-              >
-                ➤
-              </button>
-
-            </form>
-
-          </div>
-
-
-
-          <!-- CHAT STATUS -->
-
-          <p
-            id="chatMessage"
-            class="message"
-          ></p>
-
-
-        </div>
-
-      </div>
-
-
-    </section>
-
-
-
-    <!-- ===================================================
-         MOBILE BOTTOM NAVIGATION
-    ==================================================== -->
-
-    <nav
-      id="bottomNav"
-      class="bottom-nav hidden"
-      aria-label="Main navigation"
-    >
-
-
-      <button
-        type="button"
-        data-page="home"
-        class="nav-item active"
-        aria-label="Home"
-      >
-
-        <span>
-          🏠
-        </span>
-
-        <small>
-          Home
-        </small>
-
-      </button>
-
-
-
-      <button
-        type="button"
-        data-page="search"
-        class="nav-item"
-        aria-label="Search"
-      >
-
-        <span>
-          🔍
-        </span>
-
-        <small>
-          Search
-        </small>
-
-      </button>
-
-
-
-      <button
-        type="button"
-        data-page="create"
-        class="nav-item create"
-        aria-label="Create"
-      >
-
-        <span>
-          ＋
-        </span>
-
-        <small>
-          Create
-        </small>
-
-      </button>
-
-
-
-      <button
-        type="button"
-        data-page="messages"
-        class="nav-item"
-        aria-label="Messages"
-      >
-
-        <span>
-          💬
-        </span>
-
-        <small>
-          Messages
-        </small>
-
-      </button>
-
-
-
-      <button
-        type="button"
-        data-page="profile"
-        class="nav-item"
-        aria-label="Profile"
-      >
-
-        <span>
-          👤
-        </span>
-
-        <small>
-          Profile
-        </small>
-
-      </button>
-
-
-    </nav>
-
-
-  </main>
-
-
-
-  <!-- =====================================================
-       SUPABASE
-  ====================================================== -->
-
-  <script
-    src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
-  ></script>
-
-
-
-  <!-- =====================================================
-       CONFIG
-  ====================================================== -->
-
-  <script
-    src="config.js"
-  ></script>
-
-
-
-  <!-- =====================================================
-       APPLICATION
-  ====================================================== -->
-
-  <script
-    src="app.js"
-  ></script>
-
+<script src="app.js"></script>
 
 </body>
-
 </html>
