@@ -1,520 +1,304 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-
   <meta charset="UTF-8">
-
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
-  >
-
-  <meta
-    name="theme-color"
-    content="#111827"
-  >
-
-  <meta
-    name="description"
-    content="ConnectApp - Connect with people"
-  >
-
-  <link
-    rel="manifest"
-    href="manifest.json"
-  >
-
-  <link
-    rel="stylesheet"
-    href="style.css"
-  >
-
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#111827">
+  <meta name="description" content="ConnectApp - Connect with people.">
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="style.css">
   <title>ConnectApp</title>
-
 </head>
 
 <body>
 
-<!-- =========================================================
-     TOP BAR
-========================================================= -->
-
 <header class="topbar">
+  <div class="logo">ConnectApp</div>
 
-  <div class="logo">
-    ConnectApp
-  </div>
-
-  <button
-    id="logoutBtn"
-    class="hidden secondary-btn"
-    type="button"
-  >
+  <button id="logoutBtn" class="hidden secondary-btn">
     Logout
   </button>
-
 </header>
-
-
-<!-- =========================================================
-     MAIN
-========================================================= -->
 
 <main>
 
+  <!-- AUTH -->
+  <section id="authView" class="card auth-card">
 
-<!-- =========================================================
-     AUTH VIEW
-========================================================= -->
+    <h1>ConnectApp</h1>
+    <p class="muted">Connect with people.</p>
 
-<section
-  id="authView"
-  class="card auth-card"
->
-
-  <h1>ConnectApp</h1>
-
-  <p class="muted">
-    Connect with people.
-  </p>
-
-
-  <div class="tabs">
-
-    <button
-      id="loginTab"
-      class="active"
-      type="button"
-    >
-      Login
-    </button>
-
-    <button
-      id="registerTab"
-      type="button"
-    >
-      Register
-    </button>
-
-  </div>
-
-
-  <form id="authForm">
-
-    <input
-      id="email"
-      type="email"
-      placeholder="Email"
-      autocomplete="email"
-      required
-    >
-
-    <input
-      id="password"
-      type="password"
-      placeholder="Password"
-      minlength="6"
-      autocomplete="current-password"
-      required
-    >
-
-    <input
-      id="name"
-      class="hidden"
-      type="text"
-      placeholder="Your name"
-      maxlength="100"
-      autocomplete="name"
-    >
-
-    <button
-      id="authSubmit"
-      type="submit"
-      class="primary-btn"
-    >
-      Login
-    </button>
-
-  </form>
-
-
-  <p
-    id="authMessage"
-    class="message"
-  ></p>
-
-</section>
-
-
-<!-- =========================================================
-     SEARCH VIEW
-========================================================= -->
-
-<section
-  id="searchView"
-  class="card hidden"
->
-
-  <div class="section-header">
-
-    <div>
-
-      <h2>Search People</h2>
-
-      <p class="muted">
-        Find people by name.
-      </p>
-
+    <div class="tabs">
+      <button id="loginTab" class="active" type="button">Login</button>
+      <button id="registerTab" type="button">Register</button>
     </div>
 
-  </div>
-
-
-  <input
-    id="userSearch"
-    type="search"
-    placeholder="Search by name..."
-    maxlength="100"
-    autocomplete="off"
-  >
-
-
-  <div id="searchResults">
-
-    <p class="muted">
-      Search for people.
-    </p>
-
-  </div>
-
-</section>
-
-
-<!-- =========================================================
-     HOME VIEW
-========================================================= -->
-
-<section
-  id="homeView"
-  class="hidden"
->
-
-
-<!-- =========================================================
-     WELCOME
-========================================================= -->
-
-<div class="card">
-
-  <h2 id="welcome">
-    Welcome
-  </h2>
-
-  <p class="muted">
-    Your social feed
-  </p>
-
-</div>
-
-
-<!-- =========================================================
-     CREATE POST
-========================================================= -->
-
-<div
-  id="createPostCard"
-  class="card"
->
-
-  <div class="section-header">
-
-    <div>
-
-      <h2>Create Post</h2>
-
-      <p class="muted">
-        Share something with ConnectApp.
-      </p>
-
-    </div>
-
-  </div>
-
-
-  <form id="postForm">
-
-    <textarea
-      id="postText"
-      maxlength="1000"
-      placeholder="What's on your mind?"
-      required
-    ></textarea>
-
-
-    <label
-      for="postImage"
-      class="file-label"
-    >
-      Add image
-    </label>
-
-    <input
-      id="postImage"
-      type="file"
-      accept="image/jpeg,image/png,image/webp,image/gif"
-    >
-
-
-    <button
-      type="submit"
-      class="primary-btn"
-    >
-      Publish Post
-    </button>
-
-  </form>
-
-
-  <p
-    id="postMessage"
-    class="message"
-  ></p>
-
-</div>
-
-
-<!-- =========================================================
-     PROFILE
-========================================================= -->
-
-<div
-  id="profileCard"
-  class="card"
->
-
-  <div class="section-header">
-
-    <div>
-
-      <h2>My Profile</h2>
-
-      <p class="muted">
-        Manage your profile.
-      </p>
-
-    </div>
-
-  </div>
-
-
-  <form id="profileForm">
-
-    <input
-      id="profileName"
-      type="text"
-      maxlength="100"
-      placeholder="Your name"
-      required
-    >
-
-
-    <textarea
-      id="bio"
-      maxlength="500"
-      placeholder="Write something about yourself..."
-    ></textarea>
-
-
-    <button
-      type="submit"
-      class="primary-btn"
-    >
-      Save Profile
-    </button>
-
-  </form>
-
-
-  <p
-    id="profileMessage"
-    class="message"
-  ></p>
-
-</div>
-
-
-<!-- =========================================================
-     POSTS
-========================================================= -->
-
-<div
-  id="postsCard"
-  class="card"
->
-
-  <div class="section-header">
-
-    <div>
-
-      <h2>Posts</h2>
-
-      <p class="muted">
-        Latest posts from ConnectApp.
-      </p>
-
-    </div>
-
-    <button
-      id="refreshPostsBtn"
-      type="button"
-      class="icon-btn"
-      title="Refresh posts"
-    >
-      ↻
-    </button>
-
-  </div>
-
-
-  <div id="posts">
-
-    <p class="muted">
-      Loading posts...
-    </p>
-
-  </div>
-
-</div>
-
-
-<!-- =========================================================
-     MESSAGES
-========================================================= -->
-
-<div
-  id="messagesCard"
-  class="card"
->
-
-  <div class="section-header">
-
-    <div>
-
-      <h2>Messages</h2>
-
-      <p class="muted">
-        Chat privately with people.
-      </p>
-
-    </div>
-
-  </div>
-
-
-  <div class="chat-box">
-
-
-    <!-- CHAT HEADER -->
-
-    <div class="chat-header">
-
-      <button
-        id="backToConversations"
-        type="button"
-        class="chat-back hidden"
-        aria-label="Back to conversations"
+    <form id="authForm">
+
+      <input
+        id="email"
+        type="email"
+        placeholder="Email"
+        autocomplete="email"
+        required
       >
-        ←
+
+      <input
+        id="password"
+        type="password"
+        placeholder="Password"
+        minlength="6"
+        autocomplete="current-password"
+        required
+      >
+
+      <input
+        id="name"
+        class="hidden"
+        type="text"
+        placeholder="Your name"
+        maxlength="100"
+        autocomplete="name"
+      >
+
+      <button id="authSubmit" class="primary-btn" type="submit">
+        Login
       </button>
 
+    </form>
 
+    <p id="authMessage" class="message"></p>
+  </section>
+
+
+  <!-- SEARCH -->
+  <section id="searchView" class="card hidden">
+
+    <div class="section-header">
       <div>
+        <h2>Search People</h2>
+        <p class="muted">Find people and start a conversation.</p>
+      </div>
+    </div>
 
-        <strong id="chatTitle">
-          Messages
-        </strong>
+    <input
+      id="userSearch"
+      type="search"
+      placeholder="Search by name..."
+      maxlength="100"
+      autocomplete="off"
+    >
 
-        <div
-          id="chatSubtitle"
-          class="muted small"
-        >
-          Select a conversation
+    <div id="searchResults" class="search-results">
+      <p class="muted">Search for people.</p>
+    </div>
+
+  </section>
+
+
+  <!-- HOME -->
+  <section id="homeView" class="hidden">
+
+    <div class="card welcome-card">
+      <h2 id="welcome">Welcome</h2>
+      <p class="muted">Your social feed</p>
+    </div>
+
+
+    <!-- CREATE POST -->
+    <div class="card" id="createCard">
+
+      <div class="section-header">
+        <div>
+          <h2>Create Post</h2>
+          <p class="muted">Share something with the community.</p>
         </div>
+      </div>
 
+      <form id="postForm">
+
+        <textarea
+          id="postText"
+          maxlength="1000"
+          placeholder="What's on your mind?"
+          required
+        ></textarea>
+
+        <label class="file-label" for="postImage">
+          Add image
+        </label>
+
+        <input
+          id="postImage"
+          type="file"
+          accept="image/jpeg,image/png,image/webp,image/gif"
+        >
+
+        <button class="primary-btn" type="submit">
+          Publish Post
+        </button>
+
+      </form>
+
+      <p id="postMessage" class="message"></p>
+    </div>
+
+
+    <!-- PROFILE -->
+    <div class="card" id="profileCard">
+
+      <div class="section-header">
+        <div>
+          <h2>My Profile</h2>
+          <p class="muted">Update your public profile.</p>
+        </div>
+      </div>
+
+      <form id="profileForm">
+
+        <input
+          id="profileName"
+          type="text"
+          maxlength="100"
+          placeholder="Your name"
+          required
+        >
+
+        <textarea
+          id="bio"
+          maxlength="500"
+          placeholder="Write something about yourself..."
+        ></textarea>
+
+        <button class="primary-btn" type="submit">
+          Save Profile
+        </button>
+
+      </form>
+
+      <p id="profileMessage" class="message"></p>
+    </div>
+
+
+    <!-- POSTS -->
+    <div class="card" id="postsCard">
+
+      <div class="section-header">
+        <div>
+          <h2>Posts</h2>
+          <p class="muted">What's happening in ConnectApp.</p>
+        </div>
+      </div>
+
+      <div id="posts">
+        <p class="muted">Loading posts...</p>
       </div>
 
     </div>
 
 
-    <!-- CONVERSATIONS -->
+    <!-- MESSAGES -->
+    <div class="card" id="messagesCard">
 
-    <div
-      id="conversationList"
-      class="conversation-list"
-    >
+      <div class="section-header">
+        <div>
+          <h2>Messages</h2>
+          <p class="muted">Your private conversations.</p>
+        </div>
+      </div>
 
-      <p class="muted">
-        Loading conversations...
-      </p>
+      <div class="chat-box">
+
+        <!-- CHAT HEADER -->
+        <div class="chat-header">
+
+          <button
+            id="backToConversations"
+            type="button"
+            class="chat-back hidden"
+            aria-label="Back to conversations"
+          >
+            ←
+          </button>
+
+          <div class="chat-header-avatar" id="chatHeaderAvatar">
+            👤
+          </div>
+
+          <div class="chat-header-info">
+            <strong id="chatTitle">Messages</strong>
+
+            <span
+              id="chatSubtitle"
+              class="muted small"
+            >
+              Select a conversation
+            </span>
+          </div>
+
+        </div>
+
+
+        <!-- CONVERSATIONS -->
+        <div
+          id="conversationList"
+          class="conversation-list"
+        >
+          <p class="muted">
+            Loading conversations...
+          </p>
+        </div>
+
+
+        <!-- ACTIVE CHAT -->
+        <div
+          id="activeChat"
+          class="active-chat hidden"
+        >
+
+          <div
+            id="chatMessages"
+            class="chat-messages"
+            aria-live="polite"
+          ></div>
+
+          <form
+            id="chatForm"
+            class="chat-input"
+          >
+
+            <input
+              id="messageText"
+              type="text"
+              maxlength="2000"
+              placeholder="Type a message..."
+              autocomplete="off"
+              required
+            >
+
+            <button
+              type="submit"
+              aria-label="Send message"
+            >
+              ➤
+            </button>
+
+          </form>
+
+        </div>
+
+      </div>
+
+      <p id="chatMessage" class="message"></p>
 
     </div>
 
+  </section>
 
-    <!-- ACTIVE CHAT -->
-
-    <div
-      id="activeChat"
-      class="active-chat hidden"
-    >
-
-      <div
-        id="chatMessages"
-        class="chat-messages"
-      ></div>
+</main>
 
 
-      <form
-        id="chatForm"
-        class="chat-input"
-      >
-
-        <input
-          id="messageText"
-          type="text"
-          maxlength="2000"
-          placeholder="Type a message..."
-          autocomplete="off"
-          required
-        >
-
-        <button
-          type="submit"
-          aria-label="Send message"
-        >
-          ➤
-        </button>
-
-      </form>
-
-    </div>
-
-
-    <p
-      id="chatMessage"
-      class="message"
-    ></p>
-
-  </div>
-
-</div>
-
-</section>
-
-
-<!-- =========================================================
-     MOBILE BOTTOM NAVIGATION
-========================================================= -->
-
+<!-- MOBILE NAV -->
 <nav
   id="bottomNav"
   class="bottom-nav hidden"
@@ -526,101 +310,54 @@
     data-page="home"
     class="nav-item active"
   >
-
     <span>🏠</span>
-
-    <small>
-      Home
-    </small>
-
+    <small>Home</small>
   </button>
-
 
   <button
     type="button"
     data-page="search"
     class="nav-item"
   >
-
     <span>🔍</span>
-
-    <small>
-      Search
-    </small>
-
+    <small>Search</small>
   </button>
-
 
   <button
     type="button"
     data-page="create"
     class="nav-item create"
   >
-
     <span>＋</span>
-
-    <small>
-      Create
-    </small>
-
+    <small>Create</small>
   </button>
-
 
   <button
     type="button"
     data-page="messages"
-    class="nav-item"
+    class="nav-item messages-nav"
   >
-
-    <span>💬</span>
-
-    <small>
-      Messages
-    </small>
-
+    <span class="nav-icon-wrap">
+      💬
+      <b id="messageBadge" class="notification-badge hidden">0</b>
+    </span>
+    <small>Messages</small>
   </button>
-
 
   <button
     type="button"
     data-page="profile"
     class="nav-item"
   >
-
     <span>👤</span>
-
-    <small>
-      Profile
-    </small>
-
+    <small>Profile</small>
   </button>
 
 </nav>
 
 
-</main>
-
-
-<!-- =========================================================
-     SUPABASE
-========================================================= -->
-
-<script
-  src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
-></script>
-
-
-<!-- =========================================================
-     CONFIG
-========================================================= -->
-
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="config.js"></script>
-
-
-<!-- =========================================================
-     APPLICATION
-========================================================= -->
-
 <script src="app.js"></script>
 
 </body>
