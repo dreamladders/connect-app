@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <meta
+    name="theme-color"
+    content="#111827"
+  >
+
+  <link
+    rel="manifest"
+    href="manifest.json"
+  >
+
+  <link
+    rel="stylesheet"
+    href="style.css"
+  >
+
+  <title>ConnectApp</title>
+</head>
+
+<body>
+
+  <!-- =========================
+       TOP BAR
+  ========================== -->
+
+  <header class="topbar">
+
+    <div class="logo">
+      ConnectApp
+    </div>
+
+    <button
+      id="logoutBtn"
+      class="hidden"
+    >
+      Logout
+    </button>
+
+  </header>
+
+
+  <!-- =========================
+       MAIN
+  ========================== -->
+
+  <main>
+
+
+    <!-- =========================
+         AUTH VIEW
+    ========================== -->
+
+    <section
+      id="authView"
+      class="card"
+    >
+
+      <h1>ConnectApp</h1>
+
+      <p class="muted">
+        Connect with people.
+      </p>
+
+
+      <!-- LOGIN / REGISTER TABS -->
+
+      <div class="tabs">
+
+        <button
+          id="loginTab"
+          class="active"
+          type="button"
+        >
+          Login
+        </button>
+
+        <button
+          id="registerTab"
+          type="button"
+        >
+          Register
+        </button>
+
+      </div>
+
+
+      <!-- AUTH FORM -->
+
+      <form id="authForm">
+
+        <input
+          id="email"
+          type="email"
+          placeholder="Email"
+          autocomplete="email"
+          required
+        >
+
+        <input
+          id="password"
+          type="password"
+          placeholder="Password"
+          minlength="6"
+          autocomplete="current-password"
+          required
+        >
+
+        <input
+          id="name"
+          class="hidden"
+          type="text"
+          placeholder="Your name"
+          maxlength="100"
+          autocomplete="name"
+        >
+
+        <button
+          id="authSubmit"
+          type="submit"
+        >
+          Login
+        </button>
+
+      </form>
+
+
+      <p
+        id="authMessage"
+        class="message"
+      ></p>
+
+    </section>
+
+
+    <!-- =========================
+         HOME VIEW
+    ========================== -->
+
+    <section
+      id="homeView"
+      class="hidden"
+    >
+
+
+      <!-- =========================
+           WELCOME
+      ========================== -->
+
+      <div class="card">
+
+        <h2 id="welcome">
+          Welcome
+        </h2>
+
+        <p class="muted">
+          Your social feed
+        </p>
+
+      </div>
+
+
+      <!-- =========================
+           CREATE POST
+      ========================== -->
+
+      <div class="card">
+
+        <h2>
+          Create Post
+        </h2>
+
+        <form id="postForm">
+
+          <textarea
+            id="postText"
+            maxlength="1000"
+            placeholder="What's on your mind?"
+            required
+          ></textarea>
+
+
+          <label>
+            Add image
+          </label>
+
+          <input
+            id="postImage"
+            type="file"
+            accept="image/*"
+          >
+
+
+          <button
+            type="submit"
+          >
+            Publish Post
+          </button>
+
+        </form>
+
+
+        <p
+          id="postMessage"
+          class="message"
+        ></p>
+
+      </div>
+
+
+      <!-- =========================
+           PROFILE
+      ========================== -->
+
+      <div class="card">
+
+        <h2>
+          My Profile
+        </h2>
+
+
+        <form id="profileForm">
+
+          <input
+            id="profileName"
+            type="text"
+            maxlength="100"
+            placeholder="Your name"
+            required
+          >
+
+
+          <textarea
+            id="bio"
+            maxlength="500"
+            placeholder="Write something about yourself..."
+          ></textarea>
+
+
+          <button
+            type="submit"
+          >
+            Save Profile
+          </button>
+
+        </form>
+
+
+        <p
+          id="profileMessage"
+          class="message"
+        ></p>
+
+      </div>
+
+
+      <!-- =========================
+           POSTS
+      ========================== -->
+
+      <div class="card">
+
+        <h2>
+          Posts
+        </h2>
+
+
+        <div
+          id="posts"
+        >
+          <p class="muted">
+            Loading posts...
+          </p>
+        </div>
+
+      </div>
+
+
+      <!-- =========================
+           CHAT
+      ========================== -->
+
+      <div class="card">
+
+        <h2>
+          Messages
+        </h2>
+
+
+        <p class="muted">
+          Enter another user's UUID to send a message.
+        </p>
+
+
+        <input
+          id="recipientId"
+          type="text"
+          placeholder="Recipient user UUID"
+        >
+
+
+        <input
+          id="messageText"
+          type="text"
+          maxlength="2000"
+          placeholder="Write a message..."
+        >
+
+
+        <button
+          id="sendMessageBtn"
+          type="button"
+        >
+          Send Message
+        </button>
+
+
+        <p
+          id="chatMessage"
+          class="message"
+        ></p>
+
+
+        <div
+          id="messages"
+        ></div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+
+  <!-- =========================
+       SUPABASE
+  ========================== -->
+
+  <script
+    src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
+  ></script>
+
+
+  <!-- =========================
+       APP CONFIG
+  ========================== -->
+
+  <script
+    src="config.js"
+  ></script>
+
+
+  <!-- =========================
+       APPLICATION
+  ========================== -->
+
+  <script
+    src="app.js"
+  ></script>
+
+</body>
+</html>
