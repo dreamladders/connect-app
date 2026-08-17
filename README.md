@@ -1,70 +1,45 @@
-# connect-app
+# ConnectApp - Final UI Redesign
 
-<!-- Cloudflare deployment trigger -->
+This version is based on the existing ConnectApp frontend contract in `test2.txt`.
 
-# ConnectApp UI Redesign
+## Files
+- index.html - complete UI
+- style.css - responsive UI system
+- app.js - Supabase/auth/posts/search/chat logic
+- config.example.js - copy to config.js
 
-This package is a full UI replacement based on your existing `test2.txt`.
+## Keep your existing files
+Keep your existing `config.js` and `manifest.json` if you already have them.
 
-Included:
-- `index.html`
-- `style.css`
-- `app.js`
-- `config.example.js`
+`config.js` must expose:
+```js
+window.SUPABASE_URL = "https://YOUR_PROJECT.supabase.co";
+window.SUPABASE_ANON_KEY = "YOUR_PUBLISHABLE_OR_ANON_KEY";
+```
 
-## Keep your existing config.js
+Use only the Supabase publishable/anon key in browser code. Never expose a secret/service_role key.
 
-Your original app loads:
-
-    <script src="config.js"></script>
-
-Keep your existing `config.js` with the same values:
-
-    window.SUPABASE_URL = "...";
-    window.SUPABASE_ANON_KEY = "...";
-
-Do not replace it with the example unless you are configuring the project.
-
-## Existing backend/data model preserved
-
-The redesigned frontend continues to use the existing Supabase tables/storage referenced by your original app:
+## Existing Supabase tables/bucket used
 - profiles
 - posts
 - likes
 - comments
 - messages
-- post-images storage bucket
+- storage bucket: post-images
 
-## Main UI changes
+No database migration is included because this UI preserves the existing data contract.
 
-Mobile:
-- Instagram-inspired feed
-- WhatsApp-inspired conversation flow
-- Separate mobile chat screen
-- Fixed bottom navigation
-- Create post bottom-sheet/modal
-- Compact profile/search views
-- No scrollIntoView navigation for main sections
-
-Desktop:
-- Persistent left navigation
-- Centered feed
-- Split message list/chat layout
-- Modal post creation
-- Cleaner spacing and typography
-
-## Installation
-
-Replace your current:
-- index.html
-- style.css
-- app.js
-
-with the files in this package.
-
-Keep:
-- config.js
-- manifest.json
-- your Supabase project/database/storage configuration
-
-Then hard-refresh the browser after deployment.
+## UI changes
+- Mobile-first social feed
+- Fixed mobile bottom navigation
+- Separate mobile conversation list and full-screen chat
+- Desktop split chat layout
+- Stable message scrolling
+- Preserve scroll position while reading older messages
+- Auto-scroll only when already near the bottom
+- New-message notice when a realtime message arrives while reading older messages
+- Persistent chat recipient header with avatar/name
+- Create post modal/bottom sheet
+- Cleaner profile/search screens
+- Removed page-level scrollIntoView navigation for app sections
+- Removed ambiguous home symbols/counts; no fake member count is shown
