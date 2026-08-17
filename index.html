@@ -20,323 +20,280 @@
   </button>
 </header>
 
-<main>
+<!-- AUTH -->
+<section id="authView" class="card auth-card">
+  <h1>ConnectApp</h1>
+  <p class="muted">Connect with people.</p>
 
-  <!-- AUTH -->
-  <section id="authView" class="card auth-card">
+  <div class="tabs">
+    <button id="loginTab" class="active" type="button">Login</button>
+    <button id="registerTab" type="button">Register</button>
+  </div>
 
-    <h1>ConnectApp</h1>
-    <p class="muted">Connect with people.</p>
-
-    <div class="tabs">
-      <button id="loginTab" class="active" type="button">Login</button>
-      <button id="registerTab" type="button">Register</button>
-    </div>
-
-    <form id="authForm">
-
-      <input
-        id="email"
-        type="email"
-        placeholder="Email"
-        autocomplete="email"
-        required
-      >
-
-      <input
-        id="password"
-        type="password"
-        placeholder="Password"
-        minlength="6"
-        autocomplete="current-password"
-        required
-      >
-
-      <input
-        id="name"
-        class="hidden"
-        type="text"
-        placeholder="Your name"
-        maxlength="100"
-        autocomplete="name"
-      >
-
-      <button id="authSubmit" class="primary-btn" type="submit">
-        Login
-      </button>
-
-    </form>
-
-    <p id="authMessage" class="message"></p>
-  </section>
-
-
-  <!-- SEARCH -->
-  <section id="searchView" class="card hidden">
-
-    <div class="section-header">
-      <div>
-        <h2>Search People</h2>
-        <p class="muted">Find people and start a conversation.</p>
-      </div>
-    </div>
-
+  <form id="authForm">
     <input
-      id="userSearch"
-      type="search"
-      placeholder="Search by name..."
-      maxlength="100"
-      autocomplete="off"
+      id="email"
+      type="email"
+      placeholder="Email"
+      autocomplete="email"
+      required
     >
 
-    <div id="searchResults" class="search-results">
-      <p class="muted">Search for people.</p>
-    </div>
+    <input
+      id="password"
+      type="password"
+      placeholder="Password"
+      minlength="6"
+      autocomplete="current-password"
+      required
+    >
 
-  </section>
+    <input
+      id="name"
+      class="hidden"
+      type="text"
+      placeholder="Your name"
+      maxlength="100"
+      autocomplete="name"
+    >
 
+    <button id="authSubmit" class="primary-btn" type="submit">
+      Login
+    </button>
+  </form>
 
-  <!-- HOME -->
-  <section id="homeView" class="hidden">
+  <p id="authMessage" class="message"></p>
+</section>
 
-    <div class="card welcome-card">
-      <h2 id="welcome">Welcome</h2>
-      <p class="muted">Your social feed</p>
-    </div>
+<!-- MAIN APP CONTAINER (GRID LAYOUT FOR DESKTOP) -->
+<div id="appContainer" class="app-container hidden">
 
+  <!-- DESKTOP SIDEBAR -->
+  <aside id="desktopSidebar" class="desktop-sidebar">
+    <nav class="sidebar-nav" aria-label="Desktop navigation">
+      <button type="button" data-page="home" class="sidebar-item nav-item active">
+        <span>🏠</span>
+        <span>Home</span>
+      </button>
 
-    <!-- CREATE POST -->
-    <div class="card" id="createCard">
+      <button type="button" data-page="search" class="sidebar-item nav-item">
+        <span>🔍</span>
+        <span>Search</span>
+      </button>
 
+      <button type="button" data-page="create" class="sidebar-item nav-item">
+        <span>＋</span>
+        <span>Create Post</span>
+      </button>
+
+      <button type="button" data-page="messages" class="sidebar-item nav-item">
+        <span class="nav-icon-wrap">
+          💬
+          <b id="desktopMessageBadge" class="notification-badge hidden">0</b>
+        </span>
+        <span>Messages</span>
+      </button>
+
+      <button type="button" data-page="profile" class="sidebar-item nav-item">
+        <span>👤</span>
+        <span>Profile</span>
+      </button>
+    </nav>
+  </aside>
+
+  <main>
+    <!-- SEARCH VIEW -->
+    <section id="searchView" class="card hidden">
       <div class="section-header">
         <div>
-          <h2>Create Post</h2>
-          <p class="muted">Share something with the community.</p>
+          <h2>Search People</h2>
+          <p class="muted">Find people and start a conversation.</p>
         </div>
       </div>
 
-      <form id="postForm">
+      <input
+        id="userSearch"
+        type="search"
+        placeholder="Search by name..."
+        maxlength="100"
+        autocomplete="off"
+      >
 
-        <textarea
-          id="postText"
-          maxlength="1000"
-          placeholder="What's on your mind?"
-          required
-        ></textarea>
+      <div id="searchResults" class="search-results">
+        <p class="muted">Search for people.</p>
+      </div>
+    </section>
 
-        <label class="file-label" for="postImage">
-          Add image
-        </label>
+    <!-- HOME VIEW -->
+    <section id="homeView">
+      <div class="card welcome-card">
+        <h2 id="welcome">Welcome</h2>
+        <p class="muted">Your social feed</p>
+      </div>
 
-        <input
-          id="postImage"
-          type="file"
-          accept="image/jpeg,image/png,image/webp,image/gif"
-        >
-
-        <button class="primary-btn" type="submit">
-          Publish Post
-        </button>
-
-      </form>
-
-      <p id="postMessage" class="message"></p>
-    </div>
-
-
-    <!-- PROFILE -->
-    <div class="card" id="profileCard">
-
-      <div class="section-header">
-        <div>
-          <h2>My Profile</h2>
-          <p class="muted">Update your public profile.</p>
+      <!-- CREATE POST -->
+      <div class="card" id="createCard">
+        <div class="section-header">
+          <div>
+            <h2>Create Post</h2>
+            <p class="muted">Share something with the community.</p>
+          </div>
         </div>
-      </div>
 
-      <form id="profileForm">
+        <form id="postForm">
+          <textarea
+            id="postText"
+            maxlength="1000"
+            placeholder="What's on your mind?"
+            required
+          ></textarea>
 
-        <input
-          id="profileName"
-          type="text"
-          maxlength="100"
-          placeholder="Your name"
-          required
-        >
+          <label class="file-label" for="postImage">
+            Add image
+          </label>
 
-        <textarea
-          id="bio"
-          maxlength="500"
-          placeholder="Write something about yourself..."
-        ></textarea>
-
-        <button class="primary-btn" type="submit">
-          Save Profile
-        </button>
-
-      </form>
-
-      <p id="profileMessage" class="message"></p>
-    </div>
-
-
-    <!-- POSTS -->
-    <div class="card" id="postsCard">
-
-      <div class="section-header">
-        <div>
-          <h2>Posts</h2>
-          <p class="muted">What's happening in ConnectApp.</p>
-        </div>
-      </div>
-
-      <div id="posts">
-        <p class="muted">Loading posts...</p>
-      </div>
-
-    </div>
-
-
-    <!-- MESSAGES -->
-    <div class="card" id="messagesCard">
-
-      <div class="section-header">
-        <div>
-          <h2>Messages</h2>
-          <p class="muted">Your private conversations.</p>
-        </div>
-      </div>
-
-      <div class="chat-box">
-
-        <!-- CHAT HEADER -->
-        <div class="chat-header">
-
-          <button
-            id="backToConversations"
-            type="button"
-            class="chat-back hidden"
-            aria-label="Back to conversations"
+          <input
+            id="postImage"
+            type="file"
+            accept="image/jpeg,image/png,image/webp,image/gif"
           >
-            ←
+
+          <button class="primary-btn" type="submit">
+            Publish Post
           </button>
+        </form>
 
-          <div class="chat-header-avatar" id="chatHeaderAvatar">
-            👤
+        <p id="postMessage" class="message"></p>
+      </div>
+
+      <!-- PROFILE -->
+      <div class="card" id="profileCard">
+        <div class="section-header">
+          <div>
+            <h2>My Profile</h2>
+            <p class="muted">Update your public profile.</p>
           </div>
-
-          <div class="chat-header-info">
-            <strong id="chatTitle">Messages</strong>
-
-            <span
-              id="chatSubtitle"
-              class="muted small"
-            >
-              Select a conversation
-            </span>
-          </div>
-
         </div>
 
-
-        <!-- CONVERSATIONS -->
-        <div
-          id="conversationList"
-          class="conversation-list"
-        >
-          <p class="muted">
-            Loading conversations...
-          </p>
-        </div>
-
-
-        <!-- ACTIVE CHAT -->
-        <div
-          id="activeChat"
-          class="active-chat hidden"
-        >
-
-          <div
-            id="chatMessages"
-            class="chat-messages"
-            aria-live="polite"
-          ></div>
-
-          <form
-            id="chatForm"
-            class="chat-input"
+        <form id="profileForm">
+          <input
+            id="profileName"
+            type="text"
+            maxlength="100"
+            placeholder="Your name"
+            required
           >
 
-            <input
-              id="messageText"
-              type="text"
-              maxlength="2000"
-              placeholder="Type a message..."
-              autocomplete="off"
-              required
-            >
+          <textarea
+            id="bio"
+            maxlength="500"
+            placeholder="Write something about yourself..."
+          ></textarea>
 
+          <button class="primary-btn" type="submit">
+            Save Profile
+          </button>
+        </form>
+
+        <p id="profileMessage" class="message"></p>
+      </div>
+
+      <!-- POSTS -->
+      <div class="card" id="postsCard">
+        <div class="section-header">
+          <div>
+            <h2>Posts</h2>
+            <p class="muted">What's happening in ConnectApp.</p>
+          </div>
+        </div>
+
+        <div id="posts">
+          <p class="muted">Loading posts...</p>
+        </div>
+      </div>
+
+      <!-- MESSAGES -->
+      <div class="card" id="messagesCard">
+        <div class="section-header">
+          <div>
+            <h2>Messages</h2>
+            <p class="muted">Your private conversations.</p>
+          </div>
+        </div>
+
+        <div class="chat-box">
+          <!-- CHAT HEADER -->
+          <div class="chat-header">
             <button
-              type="submit"
-              aria-label="Send message"
+              id="backToConversations"
+              type="button"
+              class="chat-back hidden"
+              aria-label="Back to conversations"
             >
-              ➤
+              ←
             </button>
 
-          </form>
+            <div class="chat-header-avatar" id="chatHeaderAvatar">
+              👤
+            </div>
 
+            <div class="chat-header-info">
+              <strong id="chatTitle">Messages</strong>
+              <span id="chatSubtitle" class="muted small">Select a conversation</span>
+            </div>
+          </div>
+
+          <!-- CONVERSATIONS -->
+          <div id="conversationList" class="conversation-list">
+            <p class="muted">Loading conversations...</p>
+          </div>
+
+          <!-- ACTIVE CHAT -->
+          <div id="activeChat" class="active-chat hidden">
+            <div id="chatMessages" class="chat-messages" aria-live="polite"></div>
+
+            <form id="chatForm" class="chat-input">
+              <input
+                id="messageText"
+                type="text"
+                maxlength="2000"
+                placeholder="Type a message..."
+                autocomplete="off"
+                required
+              >
+
+              <button type="submit" aria-label="Send message">
+                ➤
+              </button>
+            </form>
+          </div>
         </div>
 
+        <p id="chatMessage" class="message"></p>
       </div>
+    </section>
+  </main>
 
-      <p id="chatMessage" class="message"></p>
+</div>
 
-    </div>
-
-  </section>
-
-</main>
-
-
-<!-- MOBILE NAV -->
-<nav
-  id="bottomNav"
-  class="bottom-nav hidden"
-  aria-label="Main navigation"
->
-
-  <button
-    type="button"
-    data-page="home"
-    class="nav-item active"
-  >
+<!-- MOBILE BOTTOM NAV -->
+<nav id="bottomNav" class="bottom-nav hidden" aria-label="Main navigation">
+  <button type="button" data-page="home" class="nav-item active">
     <span>🏠</span>
     <small>Home</small>
   </button>
 
-  <button
-    type="button"
-    data-page="search"
-    class="nav-item"
-  >
+  <button type="button" data-page="search" class="nav-item">
     <span>🔍</span>
     <small>Search</small>
   </button>
 
-  <button
-    type="button"
-    data-page="create"
-    class="nav-item create"
-  >
+  <button type="button" data-page="create" class="nav-item create">
     <span>＋</span>
     <small>Create</small>
   </button>
 
-  <button
-    type="button"
-    data-page="messages"
-    class="nav-item messages-nav"
-  >
+  <button type="button" data-page="messages" class="nav-item messages-nav">
     <span class="nav-icon-wrap">
       💬
       <b id="messageBadge" class="notification-badge hidden">0</b>
@@ -344,17 +301,11 @@
     <small>Messages</small>
   </button>
 
-  <button
-    type="button"
-    data-page="profile"
-    class="nav-item"
-  >
+  <button type="button" data-page="profile" class="nav-item">
     <span>👤</span>
     <small>Profile</small>
   </button>
-
 </nav>
-
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="config.js"></script>
