@@ -221,3 +221,18 @@ button:disabled{opacity:.55;cursor:not-allowed}
   .modal-backdrop{backdrop-filter:none}
 }
 @media(min-width:769px){.mobile-topbar,.mobile-nav{display:none!important}}
+
+
+/* Authentication follow-up actions */
+.auth-actions {
+  display: grid;
+  gap: 8px;
+  margin-top: 10px;
+}
+.auth-actions.hidden {
+  display: none;
+}
+.auth-actions button:disabled {
+  opacity: .65;
+  cursor: wait;
+}
