@@ -1,6 +1,6 @@
 // ============================================================
-// CONNECTAPP V4
-// Supabase + Social Feed + Search + Private Chat
+// CONNECTAPP — MODERN UI
+// Preserves the existing Supabase data model and core features.
 // ============================================================
 
 const { createClient } = window.supabase;
@@ -10,25 +10,21 @@ const supabaseClient = createClient(
   window.SUPABASE_ANON_KEY
 );
 
-// ============================================================
-// STATE
-// ============================================================
+// ========================= STATE =========================
 
 let currentUser = null;
 let authMode = "login";
-
 let realtimeChannel = null;
 
 let activeChatUserId = null;
 let activeChatUserName = null;
 
 let searchTimer = null;
-
 let unreadMessages = new Map();
 
-// ============================================================
-// SHORTCUTS
-// ============================================================
+let currentPage = "home";
+
+// ========================= SHORTCUTS =========================
 
 const $ = id => document.getElementById(id);
 
@@ -45,12 +41,61 @@ function setMessage(id, text, success = false) {
   if (!element) return;
 
   element.textContent = text || "";
-  element.className = success ? "message ok" : "message error";
+  element.className = text
+    ? `message ${success ? "ok" : "error"}`
+    : "message";
 }
 
-// ============================================================
-// AUTH
-// ============================================================
+function escapeHtml(value) {
+  return String(value ?? "").replace(
+    /[&<>"']/g,
+    character =>
+      ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#039;"
+      })[character]
+  );
+}
+
+function escapeAttr(value) {
+  return escapeHtml(value);
+}
+
+function formatTime(value) {
+  if (!value) return "";
+
+  const date = new Date(value);
+  const now = new Date();
+
+  if (date.toDateString() === now.toDateString()) {
+    return date.toLocaleTimeString([], {
+      hour: "numeric",
+      minute: "2-digit"
+    });
+  }
+
+  return date.toLocaleDateString([], {
+    month: "short",
+    day: "numeric"
+  });
+}
+
+function initials(name) {
+  const clean = String(name || "C").trim();
+  if (!clean) return "C";
+
+  return clean
+    .split(/\s+/)
+    .slice(0, 2)
+    .map(part => part[0])
+    .join("")
+    .toUpperCase();
+}
+
+// ========================= AUTH =========================
 
 function setAuthMode(mode) {
   authMode = mode;
@@ -60,7 +105,8 @@ function setAuthMode(mode) {
 
   $("authSubmit").textContent = mode === "login" ? "Login" : "Register";
 
-  $("name")?.classList.toggle("hidden", mode === "login");
+  $("nameField")?.classList.toggle("hidden", mode === "login");
+  $("name").required = mode === "register";
 
   setMessage("authMessage", "");
 }
@@ -113,18 +159,131 @@ $("authForm")?.addEventListener("submit", async event => {
   }
 });
 
-// ============================================================
-// LOGOUT
-// ============================================================
-
 $("logoutBtn")?.addEventListener("click", async () => {
   const { error } = await supabaseClient.auth.signOut();
   if (error) alert(error.message);
 });
 
-// ============================================================
-// PROFILE
-// ============================================================
+// ========================= NAVIGATION =========================
+
+const pageViews = {
+  home: "homeView",
+  search: "searchView",
+  profile: "profileView",
+  messages: "messagesView"
+};
+
+function activateNav(page) {
+  document.querySelectorAll(".nav-item").forEach(item => {
+    item.classList.toggle("active", item.dataset.page === page);
+  });
+}
+
+function showPage(page) {
+  currentPage = page;
+
+  Object.entries(pageViews).forEach(([name, id]) => {
+    const view = $(id);
+    if (!view) return;
+    view.classList.toggle("hidden", name !== page);
+  });
+
+  activateNav(page);
+
+  if (page !== "messages") {
+    activeChatUserId = null;
+    activeChatUserName = null;
+    resetChatLayout();
+  }
+
+  if (page === "home") {
+    loadPosts();
+  }
+
+  if (page === "messages") {
+    resetChatLayout();
+    loadConversations();
+  }
+
+  if (page === "profile") {
+    loadProfile();
+  }
+
+  if (page === "search") {
+    setTimeout(() => $("userSearch")?.focus(), 80);
+  }
+
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function openCreateModal() {
+  if (!currentUser) return;
+
+  $("createAuthorName").textContent =
+    $("profileName")?.value.trim() ||
+    currentUser.user_metadata?.name ||
+    currentUser.email?.split("@")[0] ||
+    "You";
+
+  show($("createModal"));
+  document.body.classList.add("modal-open");
+
+  setMessage("postMessage", "");
+  setTimeout(() => $("postText")?.focus(), 80);
+}
+
+function closeCreateModal() {
+  hide($("createModal"));
+  document.body.classList.remove("modal-open");
+}
+
+function setupNavigationListeners() {
+  document.querySelectorAll(".nav-item[data-page]").forEach(button => {
+    button.addEventListener("click", () => {
+      const page = button.dataset.page;
+
+      if (page === "create") {
+        openCreateModal();
+        return;
+      }
+
+      showPage(page);
+    });
+  });
+
+  document.querySelectorAll("[data-page]:not(.nav-item)").forEach(button => {
+    button.addEventListener("click", () => {
+      const page = button.dataset.page;
+
+      if (page === "create") {
+        openCreateModal();
+        return;
+      }
+
+      showPage(page);
+    });
+  });
+}
+
+setupNavigationListeners();
+
+$("mobileBrandButton")?.addEventListener("click", () => showPage("home"));
+$("mobileSearchButton")?.addEventListener("click", () => showPage("search"));
+$("homeCreateButton")?.addEventListener("click", openCreateModal);
+$("composerCard")?.addEventListener("click", openCreateModal);
+$("closeCreateModal")?.addEventListener("click", closeCreateModal);
+
+document.querySelectorAll("[data-close-create]").forEach(element => {
+  element.addEventListener("click", closeCreateModal);
+});
+
+document.addEventListener("keydown", event => {
+  if (event.key === "Escape" && !$("createModal")?.classList.contains("hidden")) {
+    closeCreateModal();
+  }
+});
+
+// ========================= PROFILE =========================
 
 async function loadProfile() {
   if (!currentUser) return;
@@ -141,10 +300,17 @@ async function loadProfile() {
   }
 
   const name = data?.name || currentUser.user_metadata?.name || "";
+  const bio = data?.bio || "";
 
-  $("profileName").value = name;
-  $("bio").value = data?.bio || "";
-  $("welcome").textContent = `Welcome, ${name || currentUser.email}`;
+  if ($("profileName")) $("profileName").value = name;
+  if ($("bio")) $("bio").value = bio;
+
+  $("welcome").textContent = `Welcome, ${name || currentUser.email || "there"}`;
+  $("profileDisplayName").textContent = name || "Your profile";
+  $("profileDisplayBio").textContent =
+    bio || "Tell people something about yourself.";
+  $("profileAvatar").textContent = initials(name);
+  $("createAuthorName").textContent = name || currentUser.email?.split("@")[0] || "You";
 }
 
 $("profileForm")?.addEventListener("submit", async event => {
@@ -171,23 +337,29 @@ $("profileForm")?.addEventListener("submit", async event => {
   } else {
     setMessage("profileMessage", "Profile saved successfully.", true);
     await loadProfile();
+    await loadPosts();
   }
 });
 
-// ============================================================
-// IMAGE UPLOAD
-// ============================================================
+// ========================= IMAGE UPLOAD =========================
 
 async function uploadPostImage(file) {
   if (!currentUser) throw new Error("You must be logged in.");
   if (!file) return null;
 
-  const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+  const allowedTypes = [
+    "image/jpeg",
+    "image/png",
+    "image/webp",
+    "image/gif"
+  ];
+
   if (!allowedTypes.includes(file.type)) {
     throw new Error("Only JPG, PNG, WEBP or GIF images are allowed.");
   }
 
   const maxSize = 5 * 1024 * 1024;
+
   if (file.size > maxSize) {
     throw new Error("Image must be 5 MB or smaller.");
   }
@@ -207,25 +379,52 @@ async function uploadPostImage(file) {
   return path;
 }
 
-// ============================================================
-// CREATE POST
-// ============================================================
+$("postImage")?.addEventListener("change", () => {
+  const file = $("postImage").files?.[0];
+  const wrap = $("imagePreviewWrap");
+  const image = $("imagePreview");
+
+  if (!file) {
+    hide(wrap);
+    image.removeAttribute("src");
+    return;
+  }
+
+  const url = URL.createObjectURL(file);
+  image.src = url;
+  show(wrap);
+});
+
+$("removeImagePreview")?.addEventListener("click", () => {
+  $("postImage").value = "";
+  $("imagePreview").removeAttribute("src");
+  hide($("imagePreviewWrap"));
+});
+
+// ========================= CREATE POST =========================
 
 $("postForm")?.addEventListener("submit", async event => {
   event.preventDefault();
 
   if (!currentUser) return;
 
+  const button = $("postForm").querySelector("button[type='submit']");
+
   try {
     const content = $("postText").value.trim();
-    if (!content) throw new Error("Post cannot be empty.");
 
-    const file = $("postImage").files[0];
+    if (!content) {
+      throw new Error("Post cannot be empty.");
+    }
+
+    const file = $("postImage").files?.[0];
     let imagePath = null;
 
     if (file) {
       imagePath = await uploadPostImage(file);
     }
+
+    if (button) button.disabled = true;
 
     const { error } = await supabaseClient.from("posts").insert({
       user_id: currentUser.id,
@@ -236,16 +435,23 @@ $("postForm")?.addEventListener("submit", async event => {
     if (error) throw error;
 
     $("postForm").reset();
+    $("imagePreview").removeAttribute("src");
+    hide($("imagePreviewWrap"));
+
     setMessage("postMessage", "Post published successfully.", true);
+
+    closeCreateModal();
+    showPage("home");
     await loadPosts();
   } catch (error) {
+    console.error(error);
     setMessage("postMessage", error.message || "Could not publish post.");
+  } finally {
+    if (button) button.disabled = false;
   }
 });
 
-// ============================================================
-// IMAGE URL
-// ============================================================
+// ========================= IMAGE URL =========================
 
 async function getImageUrl(path) {
   if (!path) return null;
@@ -259,9 +465,7 @@ async function getImageUrl(path) {
   return data?.signedUrl || null;
 }
 
-// ============================================================
-// LOAD POSTS
-// ============================================================
+// ========================= POSTS =========================
 
 async function loadPosts() {
   if (!currentUser) return;
@@ -277,7 +481,7 @@ async function loadPosts() {
       content,
       image_url,
       created_at,
-      profiles!posts_user_id_fkey(name),
+      profiles!posts_user_id_fkey(name,avatar_url),
       likes(user_id),
       comments(
         id,
@@ -291,14 +495,22 @@ async function loadPosts() {
     .limit(50);
 
   if (error) {
-    element.innerHTML = `<p class="message error">${escapeHtml(error.message)}</p>`;
+    element.innerHTML =
+      `<div class="empty-state"><strong>Could not load posts</strong><span class="message error">${escapeHtml(error.message)}</span></div>`;
     return;
   }
 
   const posts = data || [];
 
   if (!posts.length) {
-    element.innerHTML = `<p class="muted">No posts yet.</p>`;
+    element.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">＋</div>
+        <strong>No posts yet</strong>
+        <span class="muted">Be the first person to share something.</span>
+        <button type="button" class="primary-btn small-btn" onclick="openCreateModal()">Create a post</button>
+      </div>
+    `;
     return;
   }
 
@@ -309,24 +521,34 @@ async function loadPosts() {
       );
 
       const isOwner = post.user_id === currentUser.id;
+      const authorName = post.profiles?.name || "User";
+      const authorAvatar = post.profiles?.avatar_url || "";
 
       let imageHtml = "";
+
       if (post.image_url) {
         const url = await getImageUrl(post.image_url);
+
         if (url) {
-          imageHtml = `<img src="${escapeAttr(url)}" alt="Post image" loading="lazy">`;
+          imageHtml = `
+            <img
+              class="post-image"
+              src="${escapeAttr(url)}"
+              alt="Post image"
+              loading="lazy"
+            >
+          `;
         }
       }
 
       const comments = (post.comments || [])
-        .map(
-          comment => `
-            <div class="comment">
-              <b>${escapeHtml(comment.profiles?.name || "User")}</b>:
-              ${escapeHtml(comment.content)}
-            </div>
-          `
-        )
+        .sort((a, b) => new Date(a.created_at) - new Date(b.created_at))
+        .map(comment => `
+          <div class="comment">
+            <b>${escapeHtml(comment.profiles?.name || "User")}</b>
+            ${escapeHtml(comment.content)}
+          </div>
+        `)
         .join("");
 
       const actionButtons = isOwner
@@ -336,64 +558,86 @@ async function loadPosts() {
               type="button"
               class="secondary-btn small-btn"
               onclick="editPost('${post.id}')"
-            >
-              Edit
-            </button>
+            >Edit</button>
+
             <button
               type="button"
               class="danger-btn small-btn"
               onclick="deletePost('${post.id}')"
-            >
-              Delete
-            </button>
+            >Delete</button>
           </div>
         `
         : "";
 
       return `
         <article class="post" id="post-${post.id}">
-
           <div class="post-header">
-            <div>
-              <b>${escapeHtml(post.profiles?.name || "User")}</b>
-              <div class="muted small">${formatTime(post.created_at)}</div>
+            <div class="post-user">
+              <div class="avatar">
+                ${
+                  authorAvatar
+                    ? `<img src="${escapeAttr(authorAvatar)}" alt="">`
+                    : escapeHtml(initials(authorName))
+                }
+              </div>
+
+              <div class="post-user-info">
+                <strong>${escapeHtml(authorName)}</strong>
+                <span class="muted small">${formatTime(post.created_at)}</span>
+              </div>
             </div>
+
             ${actionButtons}
           </div>
 
-          <p id="post-content-${post.id}">${escapeHtml(post.content)}</p>
+          <p class="post-content" id="post-content-${post.id}">
+            ${escapeHtml(post.content)}
+          </p>
 
           ${imageHtml}
 
-          <div class="row">
+          <div class="post-actions">
             <button
               type="button"
-              class="secondary-btn small-btn"
+              class="action-btn ${liked ? "liked" : ""}"
               onclick="toggleLike('${post.id}', ${liked})"
+              aria-label="${liked ? "Unlike" : "Like"} post"
             >
-              ${liked ? "Unlike" : "Like"} (${post.likes?.length || 0})
+              <span>${liked ? "♥" : "♡"}</span>
+              <span>${post.likes?.length || 0}</span>
+            </button>
+
+            <button
+              type="button"
+              class="action-btn"
+              onclick="focusComment('${post.id}')"
+            >
+              <span>◌</span>
+              <span>${post.comments?.length || 0}</span>
             </button>
           </div>
 
-          <div class="comments">
-            ${comments}
-          </div>
+          ${
+            post.likes?.length
+              ? `<div class="post-likes">${post.likes.length} ${post.likes.length === 1 ? "like" : "likes"}</div>`
+              : ""
+          }
 
-          <div class="row">
+          ${
+            comments
+              ? `<div class="comments">${comments}</div>`
+              : ""
+          }
+
+          <form class="comment-form" onsubmit="addComment(event, '${post.id}')">
             <input
               id="comment-${post.id}"
               maxlength="500"
-              placeholder="Write a comment..."
+              placeholder="Add a comment..."
+              autocomplete="off"
             >
-            <button
-              type="button"
-              class="primary-btn small-btn"
-              onclick="addComment('${post.id}')"
-            >
-              Comment
-            </button>
-          </div>
-
+            <button type="submit" class="primary-btn small-btn">Send</button>
+          </form>
         </article>
       `;
     })
@@ -402,9 +646,12 @@ async function loadPosts() {
   element.innerHTML = html.join("");
 }
 
-// ============================================================
-// EDIT POST
-// ============================================================
+window.openCreateModal = openCreateModal;
+
+window.focusComment = function(postId) {
+  const input = $(`comment-${postId}`);
+  input?.focus();
+};
 
 window.editPost = async function(postId) {
   if (!currentUser) return;
@@ -416,7 +663,9 @@ window.editPost = async function(postId) {
   const newContent = prompt("Edit your post:", currentContent);
 
   if (newContent === null) return;
+
   const trimmed = newContent.trim();
+
   if (!trimmed) {
     alert("Post content cannot be empty.");
     return;
@@ -435,10 +684,6 @@ window.editPost = async function(postId) {
 
   await loadPosts();
 };
-
-// ============================================================
-// DELETE POST
-// ============================================================
 
 window.deletePost = async function(postId) {
   if (!currentUser) return;
@@ -459,14 +704,11 @@ window.deletePost = async function(postId) {
   await loadPosts();
 };
 
-// ============================================================
-// LIKE
-// ============================================================
-
 window.toggleLike = async function(postId, liked) {
   if (!currentUser) return;
 
   let result;
+
   if (liked) {
     result = await supabaseClient
       .from("likes")
@@ -490,11 +732,9 @@ window.toggleLike = async function(postId, liked) {
   await loadPosts();
 };
 
-// ============================================================
-// COMMENT
-// ============================================================
+window.addComment = async function(event, postId) {
+  event.preventDefault();
 
-window.addComment = async function(postId) {
   if (!currentUser) return;
 
   const input = $(`comment-${postId}`);
@@ -517,29 +757,38 @@ window.addComment = async function(postId) {
   await loadPosts();
 };
 
-// ============================================================
-// SEARCH
-// ============================================================
+// ========================= SEARCH =========================
 
-const userSearch = $("userSearch");
-
-userSearch?.addEventListener("input", () => {
+$("userSearch")?.addEventListener("input", () => {
   clearTimeout(searchTimer);
-  searchTimer = setTimeout(searchUsers, 400);
+  searchTimer = setTimeout(searchUsers, 350);
 });
 
 async function searchUsers() {
-  const query = userSearch?.value.trim();
+  const query = $("userSearch")?.value.trim();
   const results = $("searchResults");
 
   if (!results) return;
 
   if (!query) {
-    results.innerHTML = `<p class="muted">Search for people.</p>`;
+    results.innerHTML = `
+      <div class="empty-state compact">
+        <div class="empty-icon">⌕</div>
+        <strong>Find someone</strong>
+        <span class="muted">Start typing a name to search.</span>
+      </div>
+    `;
     return;
   }
 
   if (!currentUser) return;
+
+  results.innerHTML = `
+    <div class="loading-state compact">
+      <div class="spinner"></div>
+      <span>Searching...</span>
+    </div>
+  `;
 
   const { data, error } = await supabaseClient
     .from("profiles")
@@ -549,42 +798,49 @@ async function searchUsers() {
     .limit(20);
 
   if (error) {
-    results.innerHTML = `<p class="message error">${escapeHtml(error.message)}</p>`;
+    results.innerHTML =
+      `<div class="empty-state compact"><span class="message error">${escapeHtml(error.message)}</span></div>`;
     return;
   }
 
   if (!data?.length) {
-    results.innerHTML = `<p class="muted">No users found.</p>`;
+    results.innerHTML = `
+      <div class="empty-state compact">
+        <div class="empty-icon">⌕</div>
+        <strong>No people found</strong>
+        <span class="muted">Try another name.</span>
+      </div>
+    `;
     return;
   }
 
-  results.innerHTML = data
-    .map(
-      user => `
-      <div class="search-user">
-        <div>
-          <strong>${escapeHtml(user.name || "User")}</strong>
-          <p class="muted small">${escapeHtml(user.bio || "")}</p>
+  results.innerHTML = data.map(user => `
+    <div class="search-user">
+      <div class="search-user-main">
+        <div class="avatar">
+          ${
+            user.avatar_url
+              ? `<img src="${escapeAttr(user.avatar_url)}" alt="">`
+              : escapeHtml(initials(user.name))
+          }
         </div>
-        <button
-          type="button"
-          class="primary-btn small-btn"
-          onclick="startChat(
-            '${user.id}',
-            '${escapeAttr(user.name || "User")}'
-          )"
-        >
-          Message
-        </button>
-      </div>
-    `
-    )
-    .join("");
-}
 
-// ============================================================
-// START CHAT
-// ============================================================
+        <div class="search-user-copy">
+          <strong>${escapeHtml(user.name || "User")}</strong>
+          <p class="muted small">${escapeHtml(user.bio || "Connect on ConnectApp.")}</p>
+        </div>
+      </div>
+
+      <button
+        type="button"
+        class="primary-btn small-btn"
+        onclick="startChat('${user.id}', '${escapeAttr(user.name || "User")}')"
+      >
+        Message
+      </button>
+    </div>
+  `).join("");
+}
 
 window.startChat = async function(userId, userName) {
   if (!currentUser) return;
@@ -592,44 +848,48 @@ window.startChat = async function(userId, userName) {
   activeChatUserId = userId;
   activeChatUserName = userName || "User";
 
-  showChatHeader();
-  await loadActiveChat();
-  activateNav("messages");
+  showPage("messages");
 
-  $("messagesCard")?.scrollIntoView({
-    behavior: "smooth",
-    block: "start"
-  });
+  await loadConversations();
+  await openConversation(userId, activeChatUserName, "");
 };
 
-// ============================================================
-// CHAT HEADER
-// ============================================================
+// ========================= CHAT LAYOUT =========================
 
-function showChatHeader() {
-  $("chatTitle").textContent = activeChatUserName || "Messages";
-  $("chatSubtitle").textContent = "Private conversation";
+function resetChatLayout() {
+  const layout = $("messagesLayout");
+  if (!layout) return;
 
-  show($("activeChat"));
-  hide($("conversationList"));
-  show($("backToConversations"));
+  layout.classList.remove("chat-active");
 
-  $("messageText")?.focus();
-}
-
-function showConversationList() {
+  show($("chatEmptyState"));
   hide($("activeChat"));
-  show($("conversationList"));
-  hide($("backToConversations"));
 
   $("chatTitle").textContent = "Messages";
   $("chatSubtitle").textContent = "Select a conversation";
-  $("chatHeaderAvatar").innerHTML = "👤";
+  $("chatHeaderAvatar").textContent = "C";
+
+  hide($("backToConversations"));
 }
 
-// ============================================================
-// LOAD CONVERSATIONS
-// ============================================================
+function showActiveChatLayout() {
+  const layout = $("messagesLayout");
+  if (!layout) return;
+
+  layout.classList.add("chat-active");
+
+  hide($("chatEmptyState"));
+  show($("activeChat"));
+  show($("backToConversations"));
+}
+
+function showConversationList() {
+  activeChatUserId = null;
+  activeChatUserName = null;
+  resetChatLayout();
+}
+
+// ========================= CONVERSATIONS =========================
 
 async function loadConversations() {
   if (!currentUser) return;
@@ -651,7 +911,8 @@ async function loadConversations() {
     .limit(200);
 
   if (error) {
-    container.innerHTML = `<p class="message error">${escapeHtml(error.message)}</p>`;
+    container.innerHTML =
+      `<div class="empty-state compact"><span class="message error">${escapeHtml(error.message)}</span></div>`;
     return;
   }
 
@@ -665,6 +926,7 @@ async function loadConversations() {
         : message.sender_id;
 
     if (!other) continue;
+
     if (!map.has(other)) {
       map.set(other, message);
     }
@@ -674,12 +936,12 @@ async function loadConversations() {
 
   if (!ids.length) {
     container.innerHTML = `
-      <div class="empty-state">
-        <p>No conversations yet.</p>
-        <span class="muted small">
-          Search for a person to start chatting.
-        </span>
-      </div>`;
+      <div class="empty-state compact">
+        <div class="empty-icon">◌</div>
+        <strong>No conversations yet</strong>
+        <span class="muted">Search for someone to start chatting.</span>
+      </div>
+    `;
     updateMessageBadge();
     return;
   }
@@ -689,77 +951,84 @@ async function loadConversations() {
     .select("id,name,avatar_url")
     .in("id", ids);
 
-  const profileMap = new Map((profiles || []).map(p => [p.id, p]));
+  const profileMap = new Map(
+    (profiles || []).map(profile => [profile.id, profile])
+  );
 
-  container.innerHTML = ids
-    .map(userId => {
-      const last = map.get(userId);
-      const profile = profileMap.get(userId);
-      const name = profile?.name || "User";
-      const unread = unreadMessages.get(userId) || 0;
+  container.innerHTML = ids.map(userId => {
+    const last = map.get(userId);
+    const profile = profileMap.get(userId);
+    const name = profile?.name || "User";
+    const unread = unreadMessages.get(userId) || 0;
 
-      return `
-        <button
-          type="button"
-          class="conversation-item ${unread ? "unread" : ""}"
-          onclick="openConversation(
-            '${userId}',
-            '${escapeAttr(name)}',
-            '${escapeAttr(profile?.avatar_url || "")}'
-          )"
-        >
-          <div class="conversation-avatar">
-            ${
-              profile?.avatar_url
-                ? `<img src="${escapeAttr(profile.avatar_url)}" alt="">`
-                : "👤"
-            }
-          </div>
-          <div class="conversation-content">
-            <strong>${escapeHtml(name)}</strong>
-            <p class="muted small">${escapeHtml(last.content)}</p>
-          </div>
-          <div class="conversation-time muted small">
-            ${formatTime(last.created_at)}
-            ${
-              unread
-                ? `<div class="unread-count">${unread}</div>`
-                : ""
-            }
-          </div>
-        </button>
-      `;
-    })
-    .join("");
+    return `
+      <button
+        type="button"
+        class="conversation-item ${unread ? "unread" : ""}"
+        onclick="openConversation(
+          '${userId}',
+          '${escapeAttr(name)}',
+          '${escapeAttr(profile?.avatar_url || "")}'
+        )"
+      >
+        <div class="conversation-avatar">
+          ${
+            profile?.avatar_url
+              ? `<img src="${escapeAttr(profile.avatar_url)}" alt="">`
+              : escapeHtml(initials(name))
+          }
+        </div>
+
+        <div class="conversation-content">
+          <strong>${escapeHtml(name)}</strong>
+          <p class="muted small">${escapeHtml(last.content || "")}</p>
+        </div>
+
+        <div class="conversation-time muted small">
+          ${formatTime(last.created_at)}
+          ${
+            unread
+              ? `<div class="unread-count">${unread > 99 ? "99+" : unread}</div>`
+              : ""
+          }
+        </div>
+      </button>
+    `;
+  }).join("");
 
   updateMessageBadge();
 }
 
-// ============================================================
-// OPEN CONVERSATION
-// ============================================================
-
 window.openConversation = async function(userId, userName, avatarUrl) {
+  if (!currentUser) return;
+
   activeChatUserId = userId;
   activeChatUserName = userName || "User";
 
   unreadMessages.delete(userId);
   updateMessageBadge();
-  showChatHeader();
+
+  $("chatTitle").textContent = activeChatUserName;
+  $("chatSubtitle").textContent = "Private conversation";
 
   if (avatarUrl) {
-    $("chatHeaderAvatar").innerHTML = `<img src="${escapeAttr(avatarUrl)}" alt="">`;
+    $("chatHeaderAvatar").innerHTML =
+      `<img src="${escapeAttr(avatarUrl)}" alt="">`;
   } else {
-    $("chatHeaderAvatar").innerHTML = "👤";
+    $("chatHeaderAvatar").textContent = initials(activeChatUserName);
   }
+
+  showActiveChatLayout();
 
   await loadActiveChat();
   await loadConversations();
+
+  requestAnimationFrame(() => {
+    $("messageText")?.focus();
+  });
 };
 
-// ============================================================
-// LOAD ACTIVE CHAT
-// ============================================================
+// ========================= ACTIVE CHAT =========================
 
 async function loadActiveChat() {
   if (!currentUser || !activeChatUserId) return;
@@ -785,52 +1054,58 @@ async function loadActiveChat() {
     .order("created_at", { ascending: true });
 
   if (error) {
-    element.innerHTML = `<p class="message error">${escapeHtml(error.message)}</p>`;
+    element.innerHTML =
+      `<div class="empty-state compact"><span class="message error">${escapeHtml(error.message)}</span></div>`;
     return;
   }
 
   const messages = data || [];
 
   if (!messages.length) {
-    element.innerHTML = `<p class="muted">No messages yet. Say hello 👋</p>`;
+    element.innerHTML = `
+      <div class="empty-state compact">
+        <div class="empty-icon">＋</div>
+        <strong>Say hello 👋</strong>
+        <span class="muted">No messages in this conversation yet.</span>
+      </div>
+    `;
     return;
   }
 
-  element.innerHTML = messages
-    .map(message => {
-      const mine = message.sender_id === currentUser.id;
+  element.innerHTML = messages.map(message => {
+    const mine = message.sender_id === currentUser.id;
 
-      return `
-        <div class="chat-message ${mine ? "mine" : "theirs"}">
-          <div class="sender-label">
-            ${mine ? "You" : escapeHtml(activeChatUserName || "User")}
-          </div>
-          <div class="chat-bubble">
-            ${escapeHtml(message.content)}
-          </div>
-          <div class="chat-time muted small">
-            ${formatTime(message.created_at)}
-          </div>
+    return `
+      <div class="chat-message ${mine ? "mine" : "theirs"}">
+        <div class="sender-label">
+          ${mine ? "You" : escapeHtml(activeChatUserName || "User")}
         </div>
-      `;
-    })
-    .join("");
 
-  if (wasNearBottom) {
+        <div class="chat-bubble">
+          ${escapeHtml(message.content)}
+        </div>
+
+        <div class="chat-time muted">
+          ${formatTime(message.created_at)}
+        </div>
+      </div>
+    `;
+  }).join("");
+
+  if (wasNearBottom || messages.length <= 2) {
     requestAnimationFrame(() => {
       element.scrollTop = element.scrollHeight;
     });
   }
 }
 
-// ============================================================
-// SEND MESSAGE
-// ============================================================
+// ========================= SEND MESSAGE =========================
 
 $("chatForm")?.addEventListener("submit", async event => {
   event.preventDefault();
 
   if (!currentUser) return;
+
   if (!activeChatUserId) {
     setMessage("chatMessage", "Select a person first.");
     return;
@@ -838,9 +1113,11 @@ $("chatForm")?.addEventListener("submit", async event => {
 
   const input = $("messageText");
   const content = input.value.trim();
+
   if (!content) return;
 
   const button = $("chatForm").querySelector("button");
+
   if (button) button.disabled = true;
 
   try {
@@ -854,19 +1131,20 @@ $("chatForm")?.addEventListener("submit", async event => {
 
     input.value = "";
     setMessage("chatMessage", "");
+
     await loadActiveChat();
     await loadConversations();
+
     input.focus();
   } catch (error) {
-    setMessage("chatMessage", error.message || "Could not send message.");
+    setMessage(
+      "chatMessage",
+      error.message || "Could not send message."
+    );
   } finally {
     if (button) button.disabled = false;
   }
 });
-
-// ============================================================
-// ENTER TO SEND
-// ============================================================
 
 $("messageText")?.addEventListener("keydown", event => {
   if (event.key === "Enter" && !event.shiftKey) {
@@ -875,24 +1153,17 @@ $("messageText")?.addEventListener("keydown", event => {
   }
 });
 
-// ============================================================
-// BACK
-// ============================================================
-
 $("backToConversations")?.addEventListener("click", async () => {
-  activeChatUserId = null;
-  activeChatUserName = null;
-
   showConversationList();
   setMessage("chatMessage", "");
   await loadConversations();
 });
 
-// ============================================================
-// REALTIME
-// ============================================================
+// ========================= REALTIME =========================
 
 function subscribeRealtime() {
+  if (!currentUser) return;
+
   if (realtimeChannel) {
     supabaseClient.removeChannel(realtimeChannel);
   }
@@ -931,13 +1202,15 @@ function subscribeRealtime() {
           ? message.receiver_id
           : message.sender_id;
 
-        const activeConversation = activeChatUserId === otherUserId;
+        const activeConversation =
+          activeChatUserId === otherUserId;
 
         if (!isMine && !activeConversation) {
           unreadMessages.set(
             otherUserId,
             (unreadMessages.get(otherUserId) || 0) + 1
           );
+
           updateMessageBadge();
           notifyNewMessage(otherUserId);
         }
@@ -952,9 +1225,7 @@ function subscribeRealtime() {
     .subscribe();
 }
 
-// ============================================================
-// MESSAGE BADGE
-// ============================================================
+// ========================= MESSAGE BADGE =========================
 
 function updateMessageBadge() {
   const badge = $("messageBadge");
@@ -967,6 +1238,7 @@ function updateMessageBadge() {
 
   const applyBadge = element => {
     if (!element) return;
+
     if (total <= 0) {
       hide(element);
       element.textContent = "0";
@@ -980,9 +1252,7 @@ function updateMessageBadge() {
   applyBadge(desktopBadge);
 }
 
-// ============================================================
-// BROWSER NOTIFICATION
-// ============================================================
+// ========================= NOTIFICATIONS =========================
 
 async function notifyNewMessage(userId) {
   if (!("Notification" in window)) return;
@@ -1011,94 +1281,34 @@ async function notifyNewMessage(userId) {
       tag: `connectapp-message-${userId}`
     });
   } catch {
-    // Notification failure should never break chat.
+    // Notification failure must never break chat.
   }
 }
 
-// ============================================================
-// NAVIGATION
-// ============================================================
-
-function activateNav(page) {
-  document.querySelectorAll(".nav-item").forEach(item => {
-    item.classList.toggle("active", item.dataset.page === page);
-  });
-}
-
-function setupNavigationListeners(parentContainer) {
-  if (!parentContainer) return;
-
-  parentContainer.querySelectorAll(".nav-item").forEach(button => {
-    button.addEventListener("click", async () => {
-      const page = button.dataset.page;
-      activateNav(page);
-
-      if (page === "home") {
-        show($("homeView"));
-        hide($("searchView"));
-        window.scrollTo({ top: 0, behavior: "smooth" });
-        await loadPosts();
-      } else if (page === "search") {
-        hide($("homeView"));
-        show($("searchView"));
-        window.scrollTo({ top: 0, behavior: "smooth" });
-        $("userSearch")?.focus();
-      } else if (page === "create") {
-        show($("homeView"));
-        hide($("searchView"));
-        $("createCard")?.scrollIntoView({
-          behavior: "smooth",
-          block: "start"
-        });
-      } else if (page === "messages") {
-        show($("homeView"));
-        hide($("searchView"));
-        $("messagesCard")?.scrollIntoView({
-          behavior: "smooth",
-          block: "start"
-        });
-        if (!activeChatUserId) {
-          await loadConversations();
-        }
-      } else if (page === "profile") {
-        show($("homeView"));
-        hide($("searchView"));
-        $("profileCard")?.scrollIntoView({
-          behavior: "smooth",
-          block: "start"
-        });
-      }
-    });
-  });
-}
-
-setupNavigationListeners($("bottomNav"));
-setupNavigationListeners($("desktopSidebar"));
-
-// ============================================================
-// SESSION
-// ============================================================
+// ========================= SESSION =========================
 
 async function renderSession(session) {
   currentUser = session?.user || null;
 
   if (currentUser) {
     hide($("authView"));
-
     show($("appContainer"));
+    show($("bottomNav"));
     show($("logoutBtn"));
 
     await loadProfile();
     await loadPosts();
     await loadConversations();
 
+    showPage("home");
     subscribeRealtime();
   } else {
     show($("authView"));
-
     hide($("appContainer"));
-    hide($("searchView"));
+    hide($("bottomNav"));
     hide($("logoutBtn"));
+
+    closeCreateModal();
 
     activeChatUserId = null;
     activeChatUserName = null;
@@ -1113,17 +1323,13 @@ async function renderSession(session) {
   }
 }
 
-// ============================================================
-// AUTH STATE
-// ============================================================
+// ========================= AUTH STATE =========================
 
 supabaseClient.auth.onAuthStateChange((_event, session) => {
   renderSession(session);
 });
 
-// ============================================================
-// INITIALIZATION
-// ============================================================
+// ========================= INITIALIZATION =========================
 
 (async function() {
   try {
@@ -1133,7 +1339,10 @@ supabaseClient.auth.onAuthStateChange((_event, session) => {
       window.SUPABASE_URL.includes("YOUR_SUPABASE") ||
       window.SUPABASE_ANON_KEY.includes("YOUR_SUPABASE")
     ) {
-      setMessage("authMessage", "Please configure Supabase in config.js.");
+      setMessage(
+        "authMessage",
+        "Please configure Supabase in config.js."
+      );
       return;
     }
 
@@ -1144,50 +1353,10 @@ supabaseClient.auth.onAuthStateChange((_event, session) => {
     await renderSession(data.session);
   } catch (error) {
     console.error("Initialization error:", error);
+
     setMessage(
       "authMessage",
       error.message || "Could not initialize application."
     );
   }
 })();
-
-// ============================================================
-// HELPERS
-// ============================================================
-
-function formatTime(value) {
-  if (!value) return "";
-
-  const date = new Date(value);
-  const now = new Date();
-
-  if (date.toDateString() === now.toDateString()) {
-    return date.toLocaleTimeString([], {
-      hour: "numeric",
-      minute: "2-digit"
-    });
-  }
-
-  return date.toLocaleDateString([], {
-    month: "short",
-    day: "numeric"
-  });
-}
-
-function escapeHtml(value) {
-  return String(value ?? "").replace(
-    /[&<>"']/g,
-    character =>
-      ({
-        "&": "&amp;",
-        "<": "&lt;",
-        ">": "&gt;",
-        '"': "&quot;",
-        "'": "&#039;"
-      })[character]
-  );
-}
-
-function escapeAttr(value) {
-  return escapeHtml(value);
-}
