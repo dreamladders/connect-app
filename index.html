@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="theme-color" content="#ffffff">
   <meta name="description" content="ConnectApp - connect, share and chat.">
-  <link rel="manifest" href="manifest.json">
   <link rel="stylesheet" href="style.css">
   <title>ConnectApp</title>
 </head>
@@ -13,25 +12,45 @@
   <div id="authView" class="auth-shell">
     <section class="auth-card">
       <div class="brand-mark">C</div>
-      <h1>Welcome to ConnectApp</h1>
-      <p class="muted">Connect with people, share moments and chat privately.</p>
-      <div class="tabs">
+      <h1 id="authTitle">Welcome to ConnectApp</h1>
+      <p id="authIntro" class="muted">Connect with people, share moments and chat privately.</p>
+
+      <div id="authTabs" class="tabs">
         <button id="loginTab" class="tab active" type="button">Login</button>
         <button id="registerTab" class="tab" type="button">Register</button>
       </div>
+
       <form id="authForm" class="stack-form">
         <input id="name" class="hidden" type="text" placeholder="Your name" maxlength="100" autocomplete="name">
         <input id="email" type="email" placeholder="Email" autocomplete="email" required>
         <input id="password" type="password" placeholder="Password" minlength="6" autocomplete="current-password" required>
         <button id="authSubmit" class="primary-btn full" type="submit">Login</button>
       </form>
-      <p id="authMessage" class="message"></p>
+
+      <button id="forgotPasswordBtn" class="text-btn" type="button">Forgot password?</button>
+
+      <form id="forgotForm" class="stack-form hidden">
+        <p class="form-title">Reset your password</p>
+        <p class="muted small">Enter your account email and Supabase will send a reset link if email delivery is configured.</p>
+        <input id="forgotEmail" type="email" placeholder="Email" autocomplete="email" required>
+        <button class="primary-btn full" type="submit">Send reset link</button>
+        <button id="backToLoginBtn" class="secondary-btn full" type="button">Back to login</button>
+      </form>
+
+      <form id="recoveryForm" class="stack-form hidden">
+        <p class="form-title">Choose a new password</p>
+        <input id="newPassword" type="password" minlength="6" placeholder="New password" autocomplete="new-password" required>
+        <input id="confirmNewPassword" type="password" minlength="6" placeholder="Confirm new password" autocomplete="new-password" required>
+        <button class="primary-btn full" type="submit">Update password</button>
+      </form>
+
+      <p id="authMessage" class="message" role="status"></p>
     </section>
   </div>
 
   <div id="appShell" class="app-shell hidden">
     <header class="mobile-topbar">
-      <button id="mobileBrand" class="brand-button" type="button" data-page="home">ConnectApp</button>
+      <button class="brand-button" type="button" data-page="home">ConnectApp</button>
       <div class="top-actions">
         <button id="mobileSearchBtn" class="icon-btn" type="button" aria-label="Search">⌕</button>
         <button id="mobileLogoutBtn" class="icon-btn" type="button" aria-label="Logout">↪</button>
@@ -40,10 +59,10 @@
 
     <aside class="desktop-sidebar">
       <div class="desktop-brand">ConnectApp</div>
-      <nav id="desktopNav" class="side-nav" aria-label="Main navigation">
+      <nav class="side-nav" aria-label="Main navigation">
         <button class="side-nav-item active" data-page="home" type="button"><span>⌂</span><b>Home</b></button>
         <button class="side-nav-item" data-page="search" type="button"><span>⌕</span><b>Search</b></button>
-        <button class="side-nav-item" data-page="create" type="button"><span class="create-symbol">＋</span><b>Create</b></button>
+        <button class="side-nav-item" data-page="create" type="button"><span>＋</span><b>Create</b></button>
         <button class="side-nav-item" data-page="messages" type="button"><span class="nav-with-badge">◌<b id="desktopMessageBadge" class="badge hidden">0</b></span><b>Messages</b></button>
         <button class="side-nav-item" data-page="profile" type="button"><span>○</span><b>Profile</b></button>
       </nav>
@@ -52,72 +71,112 @@
 
     <main class="main-area">
       <section id="homeView" class="view active-view">
-        <div class="home-heading">
-          <div>
-            <p class="eyebrow">YOUR SPACE</p>
-            <h1 id="welcome">Welcome</h1>
-            <p class="muted">Share something with your community.</p>
+        <div class="content-column">
+          <div class="home-heading">
+            <div>
+              <p class="eyebrow">YOUR SPACE</p>
+              <h1 id="welcome">Welcome</h1>
+              <p class="muted">Share something with your community.</p>
+            </div>
+            <button class="primary-btn create-desktop" data-page="create" type="button">＋ Create</button>
           </div>
-          <button id="desktopCreateBtn" class="primary-btn create-desktop" type="button">＋ Create</button>
+
+          <section class="composer-card">
+            <div class="composer-avatar" id="composerAvatar">○</div>
+            <button id="composerOpenBtn" class="composer-trigger" type="button">What's on your mind?</button>
+            <button id="composerImageBtn" class="composer-image-btn" type="button" aria-label="Add image">▧</button>
+          </section>
+
+          <section class="feed-section">
+            <div class="feed-heading"><h2>For you</h2><span class="muted small">Latest posts</span></div>
+            <div id="posts" class="feed-list"><div class="loading-state">Loading posts...</div></div>
+          </section>
         </div>
-
-        <section class="composer-card">
-          <div class="composer-avatar" id="composerAvatar">○</div>
-          <button id="composerOpenBtn" class="composer-trigger" type="button">What's on your mind?</button>
-          <button id="composerImageBtn" class="composer-image-btn" type="button" aria-label="Add image">▧</button>
-        </section>
-
-        <section class="feed-section">
-          <div class="feed-heading"><h2>For you</h2><span id="feedStatus" class="muted small">Latest posts</span></div>
-          <div id="posts" class="feed-list"><div class="loading-state">Loading posts...</div></div>
-        </section>
       </section>
 
       <section id="searchView" class="view hidden">
-        <div class="page-heading"><p class="eyebrow">DISCOVER</p><h1>Search people</h1><p class="muted">Find someone and start a conversation.</p></div>
-        <div class="search-box"><span>⌕</span><input id="userSearch" type="search" placeholder="Search by name..." maxlength="100" autocomplete="off"></div>
-        <div id="searchResults" class="search-results"><div class="empty-state">Search for people.</div></div>
+        <div class="content-column narrow-column">
+          <div class="page-heading"><p class="eyebrow">DISCOVER</p><h1>Search people</h1><p class="muted">Find someone and start a conversation.</p></div>
+          <div class="search-box"><span>⌕</span><input id="userSearch" type="search" placeholder="Search by name..." maxlength="100" autocomplete="off"></div>
+          <div id="searchResults" class="search-results"><div class="empty-state">Search for people.</div></div>
+        </div>
       </section>
 
       <section id="profileView" class="view hidden">
-        <div class="page-heading"><p class="eyebrow">ACCOUNT</p><h1>Your profile</h1><p class="muted">Keep your public information up to date.</p></div>
-        <div class="profile-card">
-          <div class="profile-hero"><div id="profileAvatar" class="profile-avatar">○</div><div><h2 id="profileDisplayName">Your name</h2><p id="profileEmail" class="muted"></p></div></div>
-          <form id="profileForm" class="stack-form">
-            <label>Name<input id="profileName" type="text" maxlength="100" placeholder="Your name" required></label>
-            <label>Bio<textarea id="bio" maxlength="500" placeholder="Write something about yourself..."></textarea></label>
-            <button class="primary-btn" type="submit">Save profile</button>
-          </form>
-          <p id="profileMessage" class="message"></p>
+        <div class="content-column narrow-column">
+          <div class="page-heading"><p class="eyebrow">ACCOUNT</p><h1>Your profile</h1><p class="muted">Keep your public information up to date.</p></div>
+          <div class="profile-card">
+            <div class="profile-hero">
+              <div id="profileAvatar" class="profile-avatar">○</div>
+              <div><h2 id="profileDisplayName">Your name</h2><p id="profileEmail" class="muted"></p></div>
+            </div>
+            <form id="profileForm" class="stack-form">
+              <label>Name<input id="profileName" type="text" maxlength="100" placeholder="Your name" required></label>
+              <label>Bio<textarea id="bio" maxlength="500" placeholder="Write something about yourself..."></textarea></label>
+              <button class="primary-btn" type="submit">Save profile</button>
+            </form>
+            <p id="profileMessage" class="message"></p>
+
+            <div class="settings-divider"></div>
+
+            <div class="settings-section">
+              <h3>Security</h3>
+              <p class="muted small">Change the password for your currently signed-in account.</p>
+              <form id="changePasswordForm" class="stack-form">
+                <input id="changePassword" type="password" minlength="6" placeholder="New password" autocomplete="new-password" required>
+                <input id="changePasswordConfirm" type="password" minlength="6" placeholder="Confirm new password" autocomplete="new-password" required>
+                <button class="secondary-btn" type="submit">Change password</button>
+              </form>
+              <p id="passwordMessage" class="message"></p>
+            </div>
+          </div>
         </div>
       </section>
 
       <section id="messagesView" class="view hidden">
-        <div class="messages-layout">
+        <div class="messages-shell">
           <section id="conversationPanel" class="conversation-panel">
-            <div class="messages-title"><div><p class="eyebrow">PRIVATE</p><h1>Messages</h1></div><button id="messageSearchBtn" class="icon-btn" type="button" aria-label="Search people">⌕</button></div>
+            <div class="messages-title">
+              <div><p class="eyebrow">PRIVATE</p><h1>Messages</h1></div>
+              <button id="messageSearchBtn" class="icon-btn" type="button" aria-label="Search people">⌕</button>
+            </div>
             <div id="conversationList" class="conversation-list"><div class="loading-state">Loading conversations...</div></div>
           </section>
-          <section id="chatPanel" class="chat-panel hidden">
-            <header class="chat-header">
-              <button id="backToConversations" class="chat-back" type="button" aria-label="Back to conversations">←</button>
-              <div id="chatHeaderAvatar" class="chat-avatar">○</div>
-              <div class="chat-person"><strong id="chatTitle">Conversation</strong><span id="chatSubtitle" class="muted small">Private conversation</span></div>
-              <button class="icon-btn chat-more" type="button" aria-label="More options">⋮</button>
-            </header>
-            <div id="chatMessages" class="chat-messages" aria-live="polite"></div>
-            <div id="newMessageNotice" class="new-message-notice hidden">New message ↓</div>
-            <form id="chatForm" class="chat-composer">
-              <input id="messageText" type="text" maxlength="2000" placeholder="Type a message..." autocomplete="off" required>
-              <button type="submit" aria-label="Send message">➤</button>
-            </form>
-            <p id="chatMessage" class="message"></p>
+
+          <section id="chatPanel" class="chat-panel">
+            <div id="chatEmptyState" class="chat-empty-state">
+              <div class="chat-empty-icon">◌</div>
+              <h2>Your messages</h2>
+              <p>Select a conversation from the left, or search for a person to start chatting.</p>
+              <button id="chatEmptySearchBtn" class="primary-btn" type="button">Find people</button>
+            </div>
+
+            <div id="chatActive" class="chat-active hidden">
+              <header class="chat-header">
+                <button id="backToConversations" class="chat-back" type="button" aria-label="Back to conversations">←</button>
+                <div id="chatHeaderAvatar" class="chat-avatar">○</div>
+                <div class="chat-person">
+                  <strong id="chatTitle">Conversation</strong>
+                  <span id="chatSubtitle" class="muted small">Private conversation</span>
+                </div>
+                <button id="chatSearchBtn" class="icon-btn chat-more" type="button" aria-label="Find people">⌕</button>
+              </header>
+
+              <div id="chatMessages" class="chat-messages" aria-live="polite"></div>
+              <button id="newMessageNotice" class="new-message-notice hidden" type="button">New message ↓</button>
+
+              <form id="chatForm" class="chat-composer">
+                <input id="messageText" type="text" maxlength="2000" placeholder="Type a message..." autocomplete="off" required>
+                <button type="submit" aria-label="Send message">➤</button>
+              </form>
+              <p id="chatMessage" class="message"></p>
+            </div>
           </section>
         </div>
       </section>
     </main>
 
-    <nav id="mobileNav" class="mobile-nav" aria-label="Mobile navigation">
+    <nav class="mobile-nav" aria-label="Mobile navigation">
       <button class="mobile-nav-item active" data-page="home" type="button"><span>⌂</span><small>Home</small></button>
       <button class="mobile-nav-item" data-page="search" type="button"><span>⌕</span><small>Search</small></button>
       <button class="mobile-nav-item create" data-page="create" type="button"><span>＋</span><small>Create</small></button>
