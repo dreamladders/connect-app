@@ -1,45 +1,61 @@
-# ConnectApp - Final UI Redesign
+# ConnectApp Final UI
 
-This version is based on the existing ConnectApp frontend contract in `test2.txt`.
+This package is based on the supplied ConnectApp frontend and the verified Supabase contract.
 
-## Files
-- index.html - complete UI
-- style.css - responsive UI system
-- app.js - Supabase/auth/posts/search/chat logic
-- config.example.js - copy to config.js
+## Supabase contract preserved
 
-## Keep your existing files
-Keep your existing `config.js` and `manifest.json` if you already have them.
-
-`config.js` must expose:
-```js
-window.SUPABASE_URL = "https://YOUR_PROJECT.supabase.co";
-window.SUPABASE_ANON_KEY = "YOUR_PUBLISHABLE_OR_ANON_KEY";
-```
-
-Use only the Supabase publishable/anon key in browser code. Never expose a secret/service_role key.
-
-## Existing Supabase tables/bucket used
+Tables:
 - profiles
 - posts
 - likes
 - comments
 - messages
-- storage bucket: post-images
 
-No database migration is included because this UI preserves the existing data contract.
+Storage bucket:
+- post-images
 
-## UI changes
-- Mobile-first social feed
-- Fixed mobile bottom navigation
-- Separate mobile conversation list and full-screen chat
-- Desktop split chat layout
-- Stable message scrolling
-- Preserve scroll position while reading older messages
-- Auto-scroll only when already near the bottom
-- New-message notice when a realtime message arrives while reading older messages
-- Persistent chat recipient header with avatar/name
-- Create post modal/bottom sheet
-- Cleaner profile/search screens
-- Removed page-level scrollIntoView navigation for app sections
-- Removed ambiguous home symbols/counts; no fake member count is shown
+No database migration is included.
+
+## Main fixes
+
+- Desktop Messages now fills the available content area instead of leaving a large blank right side.
+- Desktop chat has a real empty state instead of an apparently broken/blank panel.
+- Desktop message list and composer live inside a stable chat panel.
+- Mobile Messages uses a full-screen conversation view.
+- Mobile chat has its own scrolling message area.
+- The page itself does not jump while reading messages.
+- The composer remains attached to the bottom of the chat.
+- Previous messages remain scrollable on mobile.
+- Chat header always shows the selected recipient name/avatar.
+- New-message notice appears when a realtime message arrives while reading older messages.
+- Realtime chat continues to use the existing `messages` table.
+- Added Change Password under Profile → Security.
+- Added Forgot Password / reset-link flow.
+- No fake member count or ambiguous `C + +` symbol.
+- Existing posts, likes, comments, search, profiles and post image storage remain based on the existing schema.
+
+## Setup
+
+1. Copy `config.example.js` to `config.js`.
+2. Put only your Supabase URL and browser-safe publishable/anon key in `config.js`.
+3. Do not put a secret/service_role key in `config.js`.
+4. Open `index.html` through your existing hosting/deployment method.
+
+## Password reset
+
+The browser calls Supabase Auth:
+- `resetPasswordForEmail`
+- `updateUser({ password })`
+
+The reset email itself still depends on Supabase Auth email configuration and provider/rate limits. The frontend cannot force an email to be delivered.
+
+## Important
+
+The code intentionally does not create or modify:
+- database tables
+- RLS policies
+- foreign keys
+- Storage policies
+- Realtime publications
+
+Those were already verified for the existing ConnectApp backend.
