@@ -23,6 +23,13 @@ function setMessage(id,text,success=false){
   e.textContent=text||"";
   e.className=`message ${success?"ok":"error"}`;
 }
+function showAuthActions(showActions){
+  const actions=$("authActions");
+  if(actions) actions.classList.toggle("hidden",!showActions);
+}
+function resetAuthActions(){
+  showAuthActions(false);
+}
 function escapeHtml(v){
   return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[c]));
 }
@@ -101,6 +108,7 @@ function setAuthMode(mode){
   $("authSubmit").textContent=mode==="login"?"Login":"Register";
   $("name")?.classList.toggle("hidden",mode==="login");
   show($("authTabs"));show($("authForm"));show($("forgotPasswordBtn"));hide($("forgotForm"));hide($("recoveryForm"));
+  resetAuthActions();
   $("authTitle").textContent="Welcome to ConnectApp";
   $("authIntro").textContent="Connect with people, share moments and chat privately.";
   setMessage("authMessage","");
@@ -112,6 +120,7 @@ $("authForm")?.addEventListener("submit",async e=>{
   e.preventDefault();
   const email=$("email").value.trim(),password=$("password").value,name=$("name").value.trim();
   setMessage("authMessage","");
+  resetAuthActions();
   try{
     if(authMode==="login"){
       const {error}=await supabaseClient.auth.signInWithPassword({email,password});
@@ -122,9 +131,75 @@ $("authForm")?.addEventListener("submit",async e=>{
         options:{data:{name},emailRedirectTo:window.location.origin+window.location.pathname}
       });
       if(error)throw error;
-      if(!data.session)setMessage("authMessage","Registration successful. Check your email and confirm your account.",true);
+
+      // Supabase intentionally does not reveal whether an email already has an
+      // account. A successful-looking signUp response therefore does NOT mean
+      // a new confirmation email was sent. Keep the message neutral and offer
+      // a resend option instead of claiming delivery.
+      if(!data.session){
+        setMessage(
+          "authMessage",
+          "Please check your email for a confirmation link. If you already have an account, try logging in instead.",
+          true
+        );
+        showAuthActions(true);
+      }
     }
-  }catch(err){setMessage("authMessage",err.message||"Authentication failed.");}
+  }catch(err){
+    const message=err?.message||"Authentication failed.";
+    setMessage("authMessage",message);
+    if(authMode==="login" && /email not confirmed|confirm your email|not confirmed/i.test(message)){
+      showAuthActions(true);
+    }else{
+      showAuthActions(false);
+    }
+  }
+});
+
+$("resendConfirmationBtn")?.addEventListener("click",async()=>{
+  const email=$("email")?.value.trim();
+  if(!email){
+    setMessage("authMessage","Enter your email address first.");
+    return;
+  }
+
+  const button=$("resendConfirmationBtn");
+  button.disabled=true;
+  const originalText=button.textContent;
+  button.textContent="Sending...";
+
+  try{
+    const {error}=await supabaseClient.auth.resend({
+      type:"signup",
+      email,
+      options:{
+        emailRedirectTo:window.location.origin+window.location.pathname
+      }
+    });
+
+    if(error)throw error;
+
+    setMessage(
+      "authMessage",
+      "If this email still needs confirmation, a new confirmation email has been requested. Check your inbox and spam folder.",
+      true
+    );
+  }catch(err){
+    const message=err?.message||"Could not resend the confirmation email.";
+    if(/already confirmed|confirmed/i.test(message)){
+      setMessage("authMessage","This account is already confirmed. Please use Login instead.");
+    }else{
+      setMessage("authMessage",message);
+    }
+  }finally{
+    button.disabled=false;
+    button.textContent=originalText;
+  }
+});
+
+$("goToLoginBtn")?.addEventListener("click",()=>{
+  setAuthMode("login");
+  $("email")?.focus();
 });
 
 $("forgotPasswordBtn")?.addEventListener("click",()=>{
