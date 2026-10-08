@@ -236,3 +236,30 @@ button:disabled{opacity:.55;cursor:not-allowed}
   opacity: .65;
   cursor: wait;
 }
+
+
+
+/* =========================
+   LEGAL FOOTER
+========================= */
+
+.legal-footer {
+  text-align: center;
+  padding: 18px 16px 100px;
+  font-size: 13px;
+  color: #8a8f98;
+}
+
+.legal-footer a {
+  color: #5b6ee1;
+  text-decoration: none;
+}
+
+.legal-footer a:hover {
+  text-decoration: underline;
+}
+
+.legal-footer span {
+  margin: 0 8px;
+  color: #b0b4bb;
+}
